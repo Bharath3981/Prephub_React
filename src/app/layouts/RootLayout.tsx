@@ -1,0 +1,28 @@
+import { Outlet } from "react-router";
+import { Footer } from "@/app/layouts/Footer";
+import { Header } from "@/app/layouts/Header";
+import { useRenderCount } from "@/shared/dev/render-count";
+import { Container } from "@/shared/ui/Container";
+
+/**
+ * The frame around every page: header, the current page (<Outlet />) and footer.
+ * It stays mounted while you move between pages, so only the page inside the Outlet changes.
+ */
+export function RootLayout() {
+  useRenderCount("RootLayout");
+  return (
+    <div className="flex min-h-screen flex-col">
+      {/* First focusable element: lets keyboard users skip the header and jump to the content. */}
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-30 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2">
+        Skip to content
+      </a>
+      <Header />
+      <main id="main" className="flex-1 py-8">
+        <Container>
+          <Outlet />
+        </Container>
+      </main>
+      <Footer />
+    </div>
+  );
+}

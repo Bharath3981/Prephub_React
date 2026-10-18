@@ -14,6 +14,21 @@ yarn typecheck
 
 `/api/*` is proxied to the PrepHub API on `http://localhost:5001` (start it from the Prephub repository with `yarn api:dev`).
 
+## Structure
+
+```
+src/
+  app/        router, layouts (header, footer), pages, error boundary
+  shared/
+    ui/       Button, Badge, Container, Skeleton, ThemeToggle
+    hooks/    useTheme
+    lib/      cn, theme-store
+    api/      client (the only place that calls fetch)
+    dev/      development helpers (render counts)
+```
+
+Progress and the module plan: `docs/PROGRESS.md`.
+
 ## Rules
 
 - Use `yarn`, never npm.

@@ -1,0 +1,37 @@
+import { Link, NavLink } from "react-router";
+import { cn } from "@/shared/lib/cn";
+import { Container } from "@/shared/ui/Container";
+import { ThemeToggle } from "@/shared/ui/ThemeToggle";
+
+const links = [
+  { to: "/questions", label: "Questions" },
+  { to: "/tags", label: "Tags" },
+  { to: "/search", label: "Search" },
+];
+
+export function Header() {
+  return (
+    <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur">
+      <Container className="flex h-14 items-center gap-6">
+        <Link to="/" className="text-lg font-bold tracking-tight">
+          PrepHub
+        </Link>
+        <nav aria-label="Main" className="flex items-center gap-1 text-sm">
+          {links.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              // NavLink gives us isActive; aria-current="page" is added automatically
+              className={({ isActive }) => cn("rounded-md px-3 py-1.5 hover:bg-surface-2", isActive ? "font-semibold text-foreground" : "text-muted")}
+            >
+              {link.label}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="ml-auto flex items-center gap-1">
+          <ThemeToggle />
+        </div>
+      </Container>
+    </header>
+  );
+}
