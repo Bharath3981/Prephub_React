@@ -3,6 +3,7 @@ import { RootLayout } from "@/app/layouts/RootLayout";
 import { DevBoomPage } from "@/app/pages/DevBoomPage";
 import { DevRacePage } from "@/app/pages/DevRacePage";
 import { DevUiPage } from "@/app/pages/DevUiPage";
+import { CategoryPage } from "@/features/catalog/CategoryPage";
 import { HomePage } from "@/features/catalog/HomePage";
 import { NotFoundPage } from "@/app/pages/NotFoundPage";
 import { PlaceholderPage } from "@/app/pages/PlaceholderPage";
@@ -34,6 +35,9 @@ export const router = createBrowserRouter([
                 { path: "dev/ui", element: <DevUiPage /> },
               ]
             : []),
+          // A topic and its sections. Static routes above (questions, tags, search, dev/...) win over these dynamic ones.
+          { path: ":category", element: <CategoryPage /> },
+          { path: ":category/:section", element: <PlaceholderPage title="Section" module="step 2.4" /> },
           { path: "*", element: <NotFoundPage /> },
         ],
       },

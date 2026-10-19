@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { kindSchema } from "@/shared/api/schemas";
 
 /**
  * What GET /api/v1/delivery/categories returns inside `data`. The schema is the single source of truth:
@@ -17,3 +18,18 @@ export const categoriesDataSchema = z.object({
 });
 
 export type DeliveryCategory = z.infer<typeof categorySchema>;
+
+/** A section of a category, for example "Concepts" or "Interview Questions". */
+export const sectionSchema = z.object({
+  name: z.string(),
+  slug: z.string(),
+  description: z.string().nullable(),
+  kind: kindSchema,
+  entryCount: z.number(),
+});
+export type DeliverySection = z.infer<typeof sectionSchema>;
+
+/** What GET /api/v1/delivery/categories/{category} returns inside `data`: the category plus its sections. */
+export const categoryDetailSchema = categorySchema.extend({ sections: z.array(sectionSchema) });
+export const categoryDetailDataSchema = z.object({ category: categoryDetailSchema });
+export type DeliveryCategoryDetail = z.infer<typeof categoryDetailSchema>;

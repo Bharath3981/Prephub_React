@@ -1,7 +1,7 @@
-import { getCategories } from "@/features/catalog/api";
 import { CategoryCard } from "@/features/catalog/CategoryCard";
+import { categoriesQuery } from "@/features/catalog/queries";
 import { useRenderCount } from "@/shared/dev/render-count";
-import { useFetch } from "@/shared/hooks/useFetch";
+import { useQuery } from "@/shared/query/useQuery";
 import { ErrorState } from "@/shared/ui/ErrorState";
 import { Skeleton } from "@/shared/ui/Skeleton";
 
@@ -25,7 +25,7 @@ function CategoryGridSkeleton() {
 
 export function HomePage() {
   useRenderCount("HomePage");
-  const categories = useFetch(getCategories, []);
+  const categories = useQuery(categoriesQuery());
 
   return (
     <div className="space-y-8">
@@ -41,7 +41,7 @@ export function HomePage() {
         <div className="mt-4">
           {categories.status === "loading" && <CategoryGridSkeleton />}
 
-          {categories.status === "error" && <ErrorState title="Could not load the topics" error={categories.error} onRetry={categories.reload} />}
+          {categories.status === "error" && <ErrorState title="Could not load the topics" error={categories.error ?? new Error("Unknown error")} onRetry={categories.refetch} />}
 
           {categories.status === "success" &&
             (categories.data.length === 0 ? (

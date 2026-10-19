@@ -42,6 +42,24 @@ validating server data with Zod, accessible loading and error states (#44).
 
 Pain to notice (this is why M2 adds a cache): go to another page and back, and the topics are requested again.
 
+## M2 Category and section pages, and the query cache: in progress
+
+- [x] 2.1 Category page `/:category` with `useFetch`: the topic, its description and its section cards (kind badge, entry count), breadcrumbs, a skeleton, an error with retry, and the **404 page** for an unknown topic (the API's 404 `NOT_FOUND` is detected on the `ApiRequestError`)
+- [x] 2.2 Query cache v1 (`useQuery`: keys, de-duplication, `staleTime`, `isFetching`) in `src/shared/query/`. Measured: Home → React → Home → React = 2 requests in total (was 4+); two calls for one key = 1 request.
+- [ ] 2.3 Cache v2 (invalidate, prefetch on hover, refetch on focus, `gcTime`)
+- [ ] 2.4 Section layout, sidebar grouped by heading, entry list
+- [ ] 2.5 Filters and pagination in the URL (`useSearchParamsState`, `keepPreviousData`)
+- [ ] 2.6 Memoised rows and the render budget
+
+2.1 checked in the browser: `/react` shows 2 section cards linking to `/react/concepts` and `/react/interview-questions`; `/no-such-topic` shows
+the 404 page (not an error box); static routes (`/questions`, `/dev/ui`) win over the dynamic `/:category`; the same `CategoryPage` is reused when the
+slug changes (`/react` to `/javascript`), and when the slug changes quickly (`/react`, `/typescript`, `/node-js`) the **last** one wins (the dependency
+on the slug plus the abort and ignore logic of `useFetch`). Render budget: `CategoryPage` 2 renders on load (skeleton, data); a slug change adds 3
+(the new slug, loading, data).
+
+**The pain, measured:** Home to React to Home to React sent 3 new requests (`/categories/react`, `/categories`, `/categories/react`): every visit
+requests again, even though nothing changed. Step 2.2 adds the cache.
+
 ## Next
 - [ ] M2 Category and section pages, the query cache
 - [ ] M3 Entry page, code editor view, tests start
