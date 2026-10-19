@@ -29,10 +29,12 @@ export class ErrorBoundary extends Component<Props, State> {
     this.props.onError?.(error, info); // the place to report to a monitoring service
   }
 
-  componentDidUpdate(prev: Props) {
+  componentDidUpdate(prev: Props, prevState: State) {
     const a = prev.resetKeys ?? [];
     const b = this.props.resetKeys ?? [];
-    if (this.state.error && (a.length !== b.length || a.some((value, i) => !Object.is(value, b[i])))) this.reset();
+    // Reset only if the boundary was ALREADY showing an error before this update. If the new key is what caused the
+    // error, resetting would render the children again, fail again and report the same error twice.
+    if (this.state.error && prevState.error && (a.length !== b.length || a.some((value, i) => !Object.is(value, b[i])))) this.reset();
   }
 
   reset = () => this.setState({ error: null });
