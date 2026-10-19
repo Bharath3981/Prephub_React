@@ -1,7 +1,9 @@
 import { createBrowserRouter } from "react-router";
 import { RootLayout } from "@/app/layouts/RootLayout";
 import { DevBoomPage } from "@/app/pages/DevBoomPage";
-import { HomePage } from "@/app/pages/HomePage";
+import { DevRacePage } from "@/app/pages/DevRacePage";
+import { DevUiPage } from "@/app/pages/DevUiPage";
+import { HomePage } from "@/features/catalog/HomePage";
 import { NotFoundPage } from "@/app/pages/NotFoundPage";
 import { PlaceholderPage } from "@/app/pages/PlaceholderPage";
 import { RouteError } from "@/app/RouteError";
@@ -24,7 +26,14 @@ export const router = createBrowserRouter([
           { path: "questions", element: <PlaceholderPage title="Questions" module="M4" /> },
           { path: "tags", element: <PlaceholderPage title="Tags" module="M4" /> },
           { path: "search", element: <PlaceholderPage title="Search" module="M5" /> },
-          ...(import.meta.env.DEV ? [{ path: "dev/boom", element: <DevBoomPage /> }] : []),
+          // Development-only pages: a crash test, the race condition demo and the UI components.
+          ...(import.meta.env.DEV
+            ? [
+                { path: "dev/boom", element: <DevBoomPage /> },
+                { path: "dev/race", element: <DevRacePage /> },
+                { path: "dev/ui", element: <DevUiPage /> },
+              ]
+            : []),
           { path: "*", element: <NotFoundPage /> },
         ],
       },

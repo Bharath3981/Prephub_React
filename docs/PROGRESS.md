@@ -20,9 +20,29 @@ Concepts covered: JSX and composition (#33, #35), props and `children`, variants
 external stores, theming without re-renders (#43), error boundaries (#25), project structure (#42), accessibility basics (skip link,
 `aria-current`, labels) (#44).
 
-## Next
+## M1 Home page and the first data hook: done
 
-- [ ] M1 Home page and the first data hook (`useFetch`, race-proof with `AbortController`)
+- [x] 1.1 Types and Zod schemas for `/delivery/categories` (`features/catalog/types.ts`), `parseResponse()` turns a wrong shape into an `ApiRequestError`
+- [x] 1.2 `useFetch` (`shared/hooks/useFetch.ts`): a request is one state (`loading`, `success` with data, or `error`), the cleanup aborts the old request, a late result is ignored, `reload()` runs it again
+- [x] 1.3 The race condition and its fix, shown on `/dev/race` (development only)
+- [x] 1.4 Home page: category cards from the API, a skeleton while loading, an error with "Try again", an empty state
+- [x] 1.5 A dev-only render panel (bottom right) that shows `window.__renders`, and the first render budget
+
+Checked in the browser: 13 topic cards from the real API; the skeleton (with a screen reader "Loading topics...") while a slow request is
+pending; the three error cases (server not reachable, an unexpected response shape, an API error with its reference id) and "Try again"
+recovering; on `/dev/race`, clicking Slow then Fast ended with the **slow** result in the version without cleanup (the bug) and with the **fast**
+result in the `useFetch` version.
+
+**Render budget, Home page:** production 2 renders of `HomePage` (loading, then success) and 1 of `RootLayout` (it never renders again).
+Strict Mode was removed from `main.tsx` on request, so development shows the same numbers as production: `HomePage: 2`, `RootLayout: 1`. (With Strict Mode on, the panel showed 3 and 2, because the mount effect runs twice in development.)
+
+Concepts covered: `useState`, `useEffect` and its cleanup (#4, #5), the dependency array (#6), race conditions and `AbortController` (#23, #48),
+a custom hook (#12), lists and `key` (#2), conditional rendering by state, the state-updater bail-out (`current.status === "loading" ? current : ...`),
+validating server data with Zod, accessible loading and error states (#44).
+
+Pain to notice (this is why M2 adds a cache): go to another page and back, and the topics are requested again.
+
+## Next
 - [ ] M2 Category and section pages, the query cache
 - [ ] M3 Entry page, code editor view, tests start
 - [ ] M4 Questions and tags

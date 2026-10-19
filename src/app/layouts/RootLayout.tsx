@@ -2,6 +2,7 @@ import { Outlet } from "react-router";
 import { Footer } from "@/app/layouts/Footer";
 import { Header } from "@/app/layouts/Header";
 import { useRenderCount } from "@/shared/dev/render-count";
+import { RenderPanel } from "@/shared/dev/RenderPanel";
 import { Container } from "@/shared/ui/Container";
 
 /**
@@ -23,6 +24,7 @@ export function RootLayout() {
         </Container>
       </main>
       <Footer />
+      {import.meta.env.DEV && <RenderPanel />}
     </div>
   );
 }

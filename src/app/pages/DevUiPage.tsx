@@ -1,21 +1,13 @@
 import { Link } from "react-router";
-import { useRenderCount } from "@/shared/dev/render-count";
 import { Badge } from "@/shared/ui/Badge";
 import { Button, buttonClass } from "@/shared/ui/Button";
 import { Skeleton } from "@/shared/ui/Skeleton";
 
-/** A temporary home page for M0: it shows the building blocks. Module M1 replaces it with the real category list. */
-export function HomePage() {
-  useRenderCount("HomePage");
+/** Development only (/dev/ui): the building blocks from M0 on one page. */
+export function DevUiPage() {
   return (
-    <div className="space-y-8">
-      <section>
-        <h1 className="text-3xl font-bold tracking-tight">PrepHub React</h1>
-        <p className="mt-2 max-w-2xl text-muted">
-          The React version of PrepHub, built module by module. This is the foundation (M0): the app shell, the router, the theme and a few
-          basic components. The real pages come next.
-        </p>
-      </section>
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold tracking-tight">UI components</h1>
 
       <section className="space-y-3 rounded-xl border border-border bg-surface p-5">
         <h2 className="font-semibold">Buttons</h2>
@@ -49,12 +41,6 @@ export function HomePage() {
         <Skeleton className="h-5 w-1/2" />
         <Skeleton className="h-24 w-full" />
       </section>
-
-      {import.meta.env.DEV && (
-        <p className="text-sm text-muted">
-          Development tools: <Link className="underline" to="/dev/boom">trigger an error</Link>, and read <code>window.__renders</code> in the console for render counts.
-        </p>
-      )}
     </div>
   );
 }

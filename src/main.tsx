@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router/dom";
 import "./index.css";
@@ -9,10 +8,9 @@ import { router } from "@/app/router";
 import "@/shared/lib/theme-store";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    {/* The last safety net: catches errors the router cannot (for example in the router setup itself). */}
-    <ErrorBoundary fallback={(error, reset) => <ErrorMessage error={error} onRetry={reset} />}>
-      <RouterProvider router={router} />
-    </ErrorBoundary>
-  </StrictMode>,
+  // The last safety net: catches errors the router cannot (for example in the router setup itself).
+  // Strict Mode is not used here, so a component renders and runs its effects once in development, as in production.
+  <ErrorBoundary fallback={(error, reset) => <ErrorMessage error={error} onRetry={reset} />}>
+    <RouterProvider router={router} />
+  </ErrorBoundary>,
 );
