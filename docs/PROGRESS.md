@@ -75,6 +75,8 @@ requests again, even though nothing changed. This is accepted in the pure-React 
 | Long lists | `useInfiniteQuery` |
 | Debugging a cache | React Query DevTools |
 
+**Review of 2.4 (decision):** two anti-patterns were spotted. (1) Passing slugs down as props: fixed. `EntryRow` builds its link from the entry's own `categorySlug` and `sectionSlug`; `SectionSidebar` reads the open topic and section with `useParams` (the URL is already the single source of truth, so it is not copied into a store). (2) Refetching on every revisit: **kept on purpose** in this pure-React app and fixed by TanStack Query in the second app. A Zustand store was considered and not used for server data: it would rebuild the query cache (staleness, in-flight de-duplication, invalidation, races). Zustand is for client state (theme, auth user later).
+
 ## Next
 - [ ] M2 Category and section pages
 - [ ] M3 Entry page, code editor view, tests start
