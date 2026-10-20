@@ -1,7 +1,6 @@
-import { memo, useEffect, useRef, useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useRef, useState } from "react";
+import { Link, useParams } from "react-router";
 import type { NavGroup } from "@/features/catalog/group-entries";
-import { useRenderCount } from "@/shared/dev/render-count";
 import { cn } from "@/shared/lib/cn";
 import { Skeleton } from "@/shared/ui/Skeleton";
 
@@ -10,8 +9,6 @@ interface NavProps {
   section: string;
   sectionName: string;
   groups: NavGroup[];
-  /** Slug of the open entry, or undefined on the list page. */
-  current: string | undefined;
 }
 
 const link = "block rounded-lg px-3 py-2 text-sm";
@@ -20,14 +17,10 @@ const off = "text-muted hover:bg-surface-2 hover:text-foreground";
 
 /**
  * Every entry of the section under its heading, with the open one highlighted. "All ..." is the list page.
- *
- * memo: the layout re-renders on every search or page change, but the 45 links only change when the section or the open
- * entry changes. For memo to see "nothing changed", every prop must be the same as last time: `current` is a string and
- * `groups` is the same array (SectionLayout builds it with useMemo). That is also why the open entry is a PROP and not read
- * with useParams in here: a component that calls useParams re-renders on every navigation, whatever its props are.
+ * Which entry is open comes from the URL (`:entry`), so the nav needs no props for it.
  */
-const Nav = memo(function Nav({ category, section, sectionName, groups, current }: NavProps) {
-  useRenderCount("SectionNav");
+function Nav({ category, section, sectionName, groups }: NavProps) {
+  const { entry: current } = useParams();
   return (
     <nav aria-label={`In ${sectionName}`} className="space-y-6">
       <Link to={`/${category}/${section}`} aria-current={current === undefined ? "page" : undefined} className={cn(link, "font-medium", current === undefined ? on : off)}>
@@ -49,7 +42,7 @@ const Nav = memo(function Nav({ category, section, sectionName, groups, current 
       ))}
     </nav>
   );
-});
+}
 
 /** The side panel on wide screens. It scrolls on its own; when it first appears, the open entry is brought into view. */
 export function SectionNavDesktop(props: NavProps) {
@@ -69,7 +62,7 @@ export function SectionNavDesktop(props: NavProps) {
 
 /** "In this section" on small screens: a disclosure that closes itself after the visitor picks an entry. */
 export function SectionNavMobile(props: NavProps) {
-  const { current } = props;
+  const { entry: current } = useParams();
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [current]);
   return (

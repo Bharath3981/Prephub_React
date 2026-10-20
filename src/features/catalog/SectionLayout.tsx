@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { Outlet, useParams } from "react-router";
 import { NotFoundPage } from "@/app/pages/NotFoundPage";
 import { getCategory, getEntries } from "@/features/catalog/api";
@@ -24,14 +23,10 @@ export interface SectionContext {
  */
 export function SectionLayout() {
   useRenderCount("SectionLayout");
-  const { category: categorySlug = "", section: sectionSlug = "", entry: currentEntry } = useParams();
+  const { category: categorySlug = "", section: sectionSlug = "" } = useParams();
   const category = useFetch((signal) => getCategory(categorySlug, signal), [categorySlug]);
   // All entries (the API allows 100 at most) for the panel; the list page asks for its own page separately.
   const all = useFetch((signal) => getEntries(categorySlug, sectionSlug, { limit: 100 }, signal), [categorySlug, sectionSlug]);
-
-  // Built once per load, not once per render: the memoised panel only skips re-rendering if it gets the SAME array.
-  const allEntries = all.status === "success" ? all.data.entries : null;
-  const groups = useMemo(() => (allEntries && allEntries.length >= 2 ? navGroups(allEntries) : null), [allEntries]);
 
   if (isNotFound(category)) return <NotFoundPage />;
   if (category.status === "error") return <ErrorState title="Could not load this topic" error={category.error} onRetry={category.reload} />;
@@ -50,8 +45,9 @@ export function SectionLayout() {
   if (!section) return <NotFoundPage />; // the topic exists but has no such section
 
   // A section with a single entry has nothing to navigate. The panel is a convenience: if its request fails, the page still works.
+  const groups = all.status === "success" && all.data.entries.length >= 2 ? navGroups(all.data.entries) : null;
   const showNav = all.status === "loading" || groups !== null;
-  const nav = { category: category.data.slug, section: section.slug, sectionName: section.name, current: currentEntry };
+  const nav = { category: category.data.slug, section: section.slug, sectionName: section.name };
   const context: SectionContext = { category: category.data, section };
 
   return (

@@ -1,20 +1,11 @@
-import { memo } from "react";
 import { Link } from "react-router";
 import type { EntrySummary } from "@/features/catalog/types";
-import { useRenderCount } from "@/shared/dev/render-count";
 import { Badge } from "@/shared/ui/Badge";
 import { DifficultyBadge } from "@/shared/ui/DifficultyBadge";
 import { KindBadge } from "@/shared/ui/KindBadge";
 
-/**
- * One entry in a list: title, summary, kind, difficulty and tags. The whole row is one link to the entry page (module M3).
- *
- * memo: the list page re-renders when the page is loading (the old list is dimmed) or a filter box changes, and every
- * card would render again with the very same `entry`. memo skips a card whose `entry` is the same object as last time.
- * It works because useFetch keeps the same data object between renders.
- */
-export const EntryRow = memo(function EntryRow({ entry }: { entry: EntrySummary }) {
-  useRenderCount("EntryRow");
+/** One entry in a list: title, summary, kind, difficulty and tags. The whole row is one link to the entry page (module M3). */
+export function EntryRow({ entry }: { entry: EntrySummary }) {
   return (
     <li>
       <Link
@@ -39,4 +30,4 @@ export const EntryRow = memo(function EntryRow({ entry }: { entry: EntrySummary 
       </Link>
     </li>
   );
-});
+}
