@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router";
 import type { NavGroup } from "@/features/catalog/group-entries";
 import { cn } from "@/shared/lib/cn";
 import { Skeleton } from "@/shared/ui/Skeleton";
+import { useRenderCount } from "@/shared/dev/render-count";
 
 interface NavProps {
   category: string;
@@ -20,6 +21,7 @@ const off = "text-muted hover:bg-surface-2 hover:text-foreground";
  * Which entry is open comes from the URL (`:entry`), so the nav needs no props for it.
  */
 function Nav({ category, section, sectionName, groups }: NavProps) {
+  useRenderCount("SectionNav");
   const { entry: current } = useParams();
   return (
     <nav aria-label={`In ${sectionName}`} className="space-y-6">

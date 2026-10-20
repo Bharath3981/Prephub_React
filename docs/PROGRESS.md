@@ -79,6 +79,22 @@ requests again, even though nothing changed. This is accepted in the pure-React 
 
 **Review of 2.4 (decision):** two anti-patterns were spotted. (1) Passing slugs down as props: fixed. `EntryRow` builds its link from the entry's own `categorySlug` and `sectionSlug`; `SectionSidebar` reads the open topic and section with `useParams` (the URL is already the single source of truth, so it is not copied into a store). (2) Refetching on every revisit: **kept on purpose** in this pure-React app and fixed by TanStack Query in the second app. A Zustand store was considered and not used for server data: it would rebuild the query cache (staleness, in-flight de-duplication, invalidation, races). Zustand is for client state (theme, auth user later).
 
+### Render tracking: what is counted and why (`useRenderCount`, read with `window.__renders` in dev)
+
+Only components that tell us something are counted. Small UI pieces (Badge, Button, Skeleton, Container, cards for 6 items, error and not-found pages, the dev pages) are not: their numbers are noise.
+
+| Component | Why it is tracked | Measured | Verdict |
+|---|---|---|---|
+| `RootLayout`, `Header` | the shell must not re-render when a page changes | 1 render on load, 0 on every navigation | good |
+| `HomePage`, `CategoryPage` | a page's budget: loading, then data | 2 renders each | good (the minimum) |
+| `SectionLayout` | the frame around the list and the entries | 2 on load, 1 per navigation | good |
+| `SectionPage` | the list page | 2 on load, **3** per page or filter change | one redundant render (`useFetch` sets "loading" in an effect after already reporting it); harmless, fix is one line |
+| `EntryRow` (20 per page) | the biggest list | **60** renders for one page change (20 new + the old 20 twice with the same data) | watch: ~40 cheap renders; `memo` would remove them, not needed at this size |
+| `SectionNav` (45 links, desktop and mobile copies) | the biggest panel | 2 renders on every filter or page change although nothing in it changed | watch: needs `memo` + a stable `groups` array to skip; not needed at this size |
+| `EntryFilters`, `Pagination` | rebuilt on every list change | 3 per change | fine, tiny and cheap |
+
+Decision: no fix is required at this size. The optional fixes (a one-line `useFetch` change, `memo` on `EntryRow` and the panel) were tried in 2.6, measured, and then reverted on purpose; they stay in git history (`7b67060`).
+
 ## Next
 - [ ] M2 Category and section pages
 - [ ] M3 Entry page, code editor view, tests start

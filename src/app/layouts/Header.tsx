@@ -2,6 +2,7 @@ import { Link, NavLink } from "react-router";
 import { cn } from "@/shared/lib/cn";
 import { Container } from "@/shared/ui/Container";
 import { ThemeToggle } from "@/shared/ui/ThemeToggle";
+import { useRenderCount } from "@/shared/dev/render-count";
 
 const links = [
   { to: "/questions", label: "Questions" },
@@ -10,6 +11,7 @@ const links = [
 ];
 
 export function Header() {
+  useRenderCount("Header");
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur">
       <Container className="flex h-14 items-center gap-6">

@@ -3,9 +3,11 @@ import type { EntrySummary } from "@/features/catalog/types";
 import { Badge } from "@/shared/ui/Badge";
 import { DifficultyBadge } from "@/shared/ui/DifficultyBadge";
 import { KindBadge } from "@/shared/ui/KindBadge";
+import { useRenderCount } from "@/shared/dev/render-count";
 
 /** One entry in a list: title, summary, kind, difficulty and tags. The whole row is one link to the entry page (module M3). */
 export function EntryRow({ entry }: { entry: EntrySummary }) {
+  useRenderCount("EntryRow");
   return (
     <li>
       <Link
