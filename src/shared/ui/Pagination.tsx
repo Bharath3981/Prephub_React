@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Link, type To } from "react-router";
 import { cn } from "@/shared/lib/cn";
 import { useRenderCount } from "@/shared/dev/render-count";
@@ -16,8 +17,13 @@ function pageItems(page: number, total: number): (number | "gap")[] {
 
 const base = "inline-flex h-9 min-w-9 items-center justify-center rounded-lg border px-3 text-sm";
 
-/** Previous, numbered pages and next. Every page is a real link, so it can be opened in a new tab and works with the Back button. */
-export function Pagination({ page, totalPages, to }: { page: number; totalPages: number; to: (page: number) => To }) {
+/**
+ * Previous, numbered pages and next. Every page is a real link, so it can be opened in a new tab and works with the Back button.
+ *
+ * memo: the list page renders several times per change (URL, loading, data), but the pager only needs to change when the page,
+ * the page count or its link builder changes. The parent passes `to` from useCallback; an inline function would defeat memo.
+ */
+export const Pagination = memo(function Pagination({ page, totalPages, to }: { page: number; totalPages: number; to: (page: number) => To }) {
   useRenderCount("Pagination");
   if (totalPages <= 1) return null;
   return (
@@ -61,4 +67,4 @@ export function Pagination({ page, totalPages, to }: { page: number; totalPages:
       )}
     </nav>
   );
-}
+});

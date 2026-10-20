@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useSearchParams, type To } from "react-router";
 import { difficultySchema, type Difficulty } from "@/features/catalog/types";
 
@@ -36,12 +37,18 @@ function buildSearch(current: ListParams, patch: Partial<ListParams>): string {
 export function useListParams() {
   const [searchParams, setSearchParams] = useSearchParams();
   const params = readParams(searchParams);
+  const { page, difficulty, search } = params;
 
-  return {
-    ...params,
-    /** Where a link goes after this change (for pagination links and "clear filters"). */
-    to: (patch: Partial<ListParams>): To => ({ search: buildSearch(params, patch) }),
-    /** Apply a change now. `replace` rewrites the current history entry (use it while typing, so Back is not full of half-typed searches). */
-    change: (patch: Partial<ListParams>, options?: { replace?: boolean }) => setSearchParams(buildSearch(params, patch), options),
-  };
+  // `to` and `change` are the same function between renders until the page, the difficulty or the search changes.
+  // A memoised child (Pagination) that receives one of them can then skip a render; a new function each time would defeat memo.
+
+  /** Where a link goes after this change (for pagination links and "clear filters"). */
+  const to = useCallback((patch: Partial<ListParams>): To => ({ search: buildSearch({ page, difficulty, search }, patch) }), [page, difficulty, search]);
+  /** Apply a change now. `replace` rewrites the current history entry (use it while typing, so Back is not full of half-typed searches). */
+  const change = useCallback(
+    (patch: Partial<ListParams>, options?: { replace?: boolean }) => setSearchParams(buildSearch({ page, difficulty, search }, patch), options),
+    [page, difficulty, search, setSearchParams],
+  );
+
+  return { ...params, to, change };
 }

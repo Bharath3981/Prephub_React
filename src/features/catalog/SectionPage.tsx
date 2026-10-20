@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Link, useOutletContext } from "react-router";
 import { NotFoundPage } from "@/app/pages/NotFoundPage";
 import { getEntries } from "@/features/catalog/api";
@@ -64,6 +64,8 @@ export function SectionPage() {
 
   // The current page, difficulty and search text, read from the URL. `to(...)` makes a link, `change(...)` changes the URL.
   const { page, difficulty, search, to, change } = useListParams();
+  // The pager's link builder. The same function until the URL changes, so the memoised Pagination can skip other renders.
+  const pageLink = useCallback((next: number) => to({ page: next }), [to]);
 
   // One page of entries. Runs again whenever the section, the page or a filter changes.
   const entries = useFetch((signal) => getEntries(category.slug, section.slug, { page, limit: PAGE_SIZE, difficulty, search }, signal), [category.slug, section.slug, page, difficulty, search]);
@@ -168,7 +170,7 @@ export function SectionPage() {
       )}
 
       {/* ===== 4. PAGER: Previous, page numbers, Next (real links, so Back and "open in new tab" work) ===== */}
-      {meta && <Pagination page={meta.page} totalPages={meta.totalPages} to={(next) => to({ page: next })} />}
+      {meta && <Pagination page={meta.page} totalPages={meta.totalPages} to={pageLink} />}
     </div>
   );
 }
