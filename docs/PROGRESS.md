@@ -91,9 +91,10 @@ Only components that tell us something are counted. Small UI pieces (Badge, Butt
 | `SectionPage` | the list page | 2 on load, **2** per page or filter change (was 3: `useFetch` no longer sets "loading" a second time) | good (the minimum: dimmed old list, then data) |
 | `EntryRow` (20 per page) | the biggest list | after refresh 20, after clicking Easy 29 (**was 69**): `memo`, works because `useFetch` keeps the same `entry` objects | fixed with `memo` |
 | `SectionNav` (45 links, desktop and mobile copies) | the biggest panel | 2 on load, **0** on a filter or page change, 2 when the open entry changes (needed) | fixed: `memo`, `useMemo` for the `groups` array, and the open entry passed as a prop (not `useParams` inside) |
-| `EntryFilters`, `Pagination` | rebuilt on every list change | 2 per change (3 before) | fine, tiny and cheap. Not memoised: their props include inline functions, so `memo` would also need `useCallback` on every prop |
+| `Pagination` | rebuilt on every list change | after clicking Easy +2 (was +3): `memo`, and its link builder `to` comes from `useCallback` (stable until the URL changes) | fixed |
+| `EntryFilters` | the filter bar | +2 per change | fine, tiny. Not memoised: same pattern as `Pagination` (`useCallback` on `onDifficulty` and `onSearch`) if it is ever needed |
 
-Decision: `memo` on `EntryRow` and the panel, `useMemo` for the panel's `groups`, and a one-line `useFetch` change were applied again after the section page numbers were reviewed (the same set as the reverted 2.6 commit `7b67060`, without the `Pagination` and `EntryFilters` changes).
+Decision: `memo` on `EntryRow` and the panel, `useMemo` for the panel's `groups`, and a one-line `useFetch` change were applied again after the section page numbers were reviewed (the same set as the reverted 2.6 commit `7b67060`, plus `memo` on `Pagination` with stable link-builder functions from `useListParams`). `SectionPage` itself is not memoised on purpose: it is a route page with no props, and its renders come from its own state (URL and request), which `memo` cannot skip; 2 per change is the minimum (dimmed old list, then data).
 
 ## Next
 - [ ] M2 Category and section pages
