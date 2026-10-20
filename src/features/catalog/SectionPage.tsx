@@ -1,19 +1,42 @@
-import { useParams } from "react-router";
+import { useEffect, useRef } from "react";
+import { Link, useOutletContext } from "react-router";
 import { NotFoundPage } from "@/app/pages/NotFoundPage";
-import { getCategory, getEntries } from "@/features/catalog/api";
+import { getEntries } from "@/features/catalog/api";
+import { EntryFilters } from "@/features/catalog/EntryFilters";
 import { EntryRow } from "@/features/catalog/EntryRow";
-import { groupEntries } from "@/features/catalog/group-entries";
-import { SectionSidebar } from "@/features/catalog/SectionSidebar";
-import { ApiRequestError } from "@/shared/api/client";
+import { PAGE_SIZE, useListParams } from "@/features/catalog/list-params";
+import type { SectionContext } from "@/features/catalog/SectionLayout";
+import { isNotFound } from "@/shared/api/not-found";
 import { useRenderCount } from "@/shared/dev/render-count";
-import { useFetch, type FetchState } from "@/shared/hooks/useFetch";
+import { useFetch } from "@/shared/hooks/useFetch";
+import { useKeepPrevious } from "@/shared/hooks/useKeepPrevious";
 import { Breadcrumbs } from "@/shared/ui/Breadcrumbs";
 import { ErrorState } from "@/shared/ui/ErrorState";
 import { KindBadge } from "@/shared/ui/KindBadge";
+import { Pagination } from "@/shared/ui/Pagination";
 import { Skeleton } from "@/shared/ui/Skeleton";
 
-const isNotFound = (state: FetchState<unknown>) => state.status === "error" && state.error instanceof ApiRequestError && state.error.status === 404;
+/**
+ * SECTION LIST PAGE: /:category/:section, for example /react/interview-questions
+ *
+ * This file is only the RIGHT-HAND part of the screen. The left-hand side panel (the entry titles under their
+ * headings) belongs to SectionLayout.tsx, which wraps this page and stays mounted while you move between entries.
+ *
+ *   SectionLayout.tsx                      this file (SectionPage.tsx)
+ *   +-----------------+-----------------------------------------------+
+ *   | SIDE PANEL      | 1. HEADER      breadcrumbs, title, description |
+ *   | (SectionNav)    | 2. FILTER BAR  difficulty buttons, search box  |
+ *   |                 | 3. ENTRY LIST  one card per entry (a page)     |
+ *   |                 | 4. PAGER       Previous 1 2 3 Next             |
+ *   +-----------------+-----------------------------------------------+
+ *
+ * Where each piece of data comes from:
+ * - the topic and the section (name, description, kind): from SectionLayout, through the outlet context;
+ * - page, difficulty and search: from the URL (list-params.ts), so a link or a refresh shows the same list;
+ * - the entries of the current page: loaded here with useFetch.
+ */
 
+/** Grey placeholder cards shown the very first time the list loads (before there is any list to show). */
 function EntryListSkeleton() {
   return (
     <div role="status" aria-busy="true" className="space-y-3">
@@ -31,34 +54,57 @@ function EntryListSkeleton() {
 
 export function SectionPage() {
   useRenderCount("SectionPage");
-  const { category: categorySlug = "", section: sectionSlug = "" } = useParams();
 
-  // Two independent requests that run at the same time: the topic (its sections, for the header and sidebar) and the entries.
-  const category = useFetch((signal) => getCategory(categorySlug, signal), [categorySlug]);
-  const entries = useFetch((signal) => getEntries(categorySlug, sectionSlug, { limit: 100 }, signal), [categorySlug, sectionSlug]);
+  // ---------------------------------------------------------------------------------------------
+  // DATA: what this page needs before it can draw anything
+  // ---------------------------------------------------------------------------------------------
 
-  if (isNotFound(category) || isNotFound(entries)) return <NotFoundPage />;
-  if (category.status === "error") return <ErrorState title="Could not load this topic" error={category.error} onRetry={category.reload} />;
-  if (category.status === "loading") {
-    return (
-      <div role="status" aria-busy="true" className="space-y-4">
-        <span className="sr-only">Loading the section...</span>
-        <Skeleton className="h-4 w-48" />
-        <Skeleton className="h-8 w-1/3" />
-        <Skeleton className="h-4 w-2/3" />
-      </div>
-    );
-  }
+  // The topic (for example React) and the section (for example Interview Questions), already loaded by SectionLayout.
+  const { category, section } = useOutletContext<SectionContext>();
 
-  const section = category.data.sections.find((s) => s.slug === sectionSlug);
-  if (!section) return <NotFoundPage />; // the topic exists but has no such section
+  // The current page, difficulty and search text, read from the URL. `to(...)` makes a link, `change(...)` changes the URL.
+  const { page, difficulty, search, to, change } = useListParams();
 
-  const groups = entries.status === "success" ? groupEntries(entries.data.entries) : null;
+  // One page of entries. Runs again whenever the section, the page or a filter changes.
+  const entries = useFetch((signal) => getEntries(category.slug, section.slug, { page, limit: PAGE_SIZE, difficulty, search }, signal), [category.slug, section.slug, page, difficulty, search]);
+
+  // While the next page loads, keep showing the current one (dimmed) instead of flashing a skeleton.
+  const shown = useKeepPrevious(entries, `${category.slug}/${section.slug}`);
+
+  // ---------------------------------------------------------------------------------------------
+  // BEHAVIOUR: scroll to the top of the list after a page change
+  // ---------------------------------------------------------------------------------------------
+
+  // The pager is at the bottom of the page, so without this the new page would start out of sight.
+  const listTop = useRef<HTMLDivElement>(null);
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false; // do not scroll when the page first opens
+      return;
+    }
+    listTop.current?.scrollIntoView({ block: "start" });
+  }, [page]);
+
+  // ---------------------------------------------------------------------------------------------
+  // WHOLE-PAGE STATES: nothing to draw
+  // ---------------------------------------------------------------------------------------------
+
+  if (isNotFound(entries)) return <NotFoundPage />;
+
+  // ---------------------------------------------------------------------------------------------
+  // VALUES FOR THE SCREEN
+  // ---------------------------------------------------------------------------------------------
+
+  const list = shown.data?.entries; // the cards to draw (undefined until the first load finishes)
+  const meta = shown.data?.meta; // page, limit, total, totalPages
+  const filtered = difficulty !== undefined || search.trim() !== ""; // is any filter on?
 
   return (
     <div className="space-y-6">
+      {/* ===== 1. HEADER: breadcrumbs, section title, kind badge, description ===== */}
       <header className="space-y-2">
-        <Breadcrumbs items={[{ label: "Home", to: "/" }, { label: category.data.name, to: `/${category.data.slug}` }, { label: section.name }]} />
+        <Breadcrumbs items={[{ label: "Home", to: "/" }, { label: category.name, to: `/${category.slug}` }, { label: section.name }]} />
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-3xl font-bold tracking-tight">{section.name}</h1>
           <KindBadge kind={section.kind} />
@@ -66,36 +112,63 @@ export function SectionPage() {
         {section.description && <p className="max-w-2xl text-muted">{section.description}</p>}
       </header>
 
-      <div className="grid gap-8 lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <SectionSidebar sections={category.data.sections} groups={groups} />
+      {/* ===== 2. FILTER BAR: difficulty buttons, search box, and the "Showing 1 to 20 of 45" line ===== */}
+      {/* listTop is the spot we scroll to after a page change. */}
+      <div ref={listTop} className="scroll-mt-20 space-y-2">
+        <EntryFilters difficulty={difficulty} search={search} onDifficulty={(value) => change({ difficulty: value })} onSearch={(value) => change({ search: value }, { replace: true })} />
+        {meta && list && list.length > 0 && (
+          <p className="text-sm text-muted" aria-live="polite">
+            Showing {(meta.page - 1) * meta.limit + 1} to {(meta.page - 1) * meta.limit + list.length} of {meta.total}
+          </p>
+        )}
+      </div>
 
-        <div className="space-y-8">
-          {entries.status === "loading" && <EntryListSkeleton />}
-          {entries.status === "error" && <ErrorState title="Could not load the entries" error={entries.error} onRetry={entries.reload} />}
-          {entries.status === "success" && groups !== null && (
-            <>
-              {groups.length === 0 && <p className="text-muted">This section has no published entries yet.</p>}
-              {groups.map((group) => (
-                <section key={group.id} aria-labelledby={group.id}>
-                  <h2 id={group.id} className="mb-3 scroll-mt-20 text-xl font-semibold">
-                    {group.title}
-                  </h2>
-                  <ul className="space-y-3">
-                    {group.entries.map((entry) => (
-                      <EntryRow key={entry.slug} entry={entry} />
-                    ))}
-                  </ul>
-                </section>
-              ))}
-              {entries.data.meta.total > entries.data.entries.length && (
-                <p className="text-sm text-muted">
-                  Showing {entries.data.entries.length} of {entries.data.meta.total} entries. Pages come in step 2.5.
-                </p>
+      {/* ===== 3. ENTRY LIST: loading, error, empty and the cards ===== */}
+
+      {/* 3a. The request failed: message with "Try again". */}
+      {entries.status === "error" && <ErrorState title="Could not load the entries" error={entries.error} onRetry={entries.reload} />}
+
+      {/* 3b. First load, nothing to show yet: skeleton cards. */}
+      {entries.status === "loading" && list === undefined && <EntryListSkeleton />}
+
+      {/* 3c. We have a list. While the next page loads it stays on screen, dimmed (aria-busy). */}
+      {list && meta && (
+        <div aria-busy={shown.isPlaceholder} className={shown.isPlaceholder ? "opacity-60 transition-opacity" : undefined}>
+          {list.length === 0 ? (
+            // 3c-i. Empty: out-of-range page, filters that match nothing, or a section with no entries.
+            <p className="text-muted">
+              {meta.page > 1 && meta.total > 0 ? (
+                <>
+                  There is no page {meta.page}.{" "}
+                  <Link to={to({ page: 1 })} className="text-accent underline">
+                    Go to the first page
+                  </Link>
+                  .
+                </>
+              ) : filtered ? (
+                <>
+                  No entries match these filters.{" "}
+                  <Link to={to({ difficulty: undefined, search: "" })} className="text-accent underline">
+                    Clear the filters
+                  </Link>
+                </>
+              ) : (
+                "This section has no published entries yet."
               )}
-            </>
+            </p>
+          ) : (
+            // 3c-ii. The cards: one EntryRow per entry (a link to the entry page).
+            <ul className="space-y-3">
+              {list.map((entry) => (
+                <EntryRow key={entry.slug} entry={entry} />
+              ))}
+            </ul>
           )}
         </div>
-      </div>
+      )}
+
+      {/* ===== 4. PAGER: Previous, page numbers, Next (real links, so Back and "open in new tab" work) ===== */}
+      {meta && <Pagination page={meta.page} totalPages={meta.totalPages} to={(next) => to({ page: next })} />}
     </div>
   );
 }

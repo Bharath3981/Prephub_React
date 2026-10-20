@@ -7,6 +7,7 @@ import {
   pageMetaSchema,
   type DeliveryCategory,
   type DeliveryCategoryDetail,
+  type Difficulty,
   type EntriesPage,
 } from "@/features/catalog/types";
 
@@ -22,9 +23,17 @@ export async function getCategory(slug: string, signal?: AbortSignal): Promise<D
   return parseResponse(categoryDetailDataSchema, response.data).category;
 }
 
-/** The entries of one section (published ones only). limit is at most 100; filters and pages come in step 2.5. */
-export async function getEntries(categorySlug: string, sectionSlug: string, query: { page?: number; limit?: number } = {}, signal?: AbortSignal): Promise<EntriesPage> {
+export interface EntriesQuery {
+  page?: number;
+  /** 1 to 100. */
+  limit?: number;
+  difficulty?: Difficulty;
+  search?: string;
+}
+
+/** The entries of one section (published ones only), one page at a time. Empty values are left out of the URL. */
+export async function getEntries(categorySlug: string, sectionSlug: string, query: EntriesQuery = {}, signal?: AbortSignal): Promise<EntriesPage> {
   const path = `/delivery/categories/${encodeURIComponent(categorySlug)}/sections/${encodeURIComponent(sectionSlug)}/entries`;
-  const response = await api<unknown>(path, { query, signal });
+  const response = await api<unknown>(path, { query: { ...query }, signal });
   return { entries: parseResponse(entriesDataSchema, response.data).entries, meta: parseResponse(pageMetaSchema, response.meta) };
 }

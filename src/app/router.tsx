@@ -5,6 +5,7 @@ import { DevRacePage } from "@/app/pages/DevRacePage";
 import { DevUiPage } from "@/app/pages/DevUiPage";
 import { CategoryPage } from "@/features/catalog/CategoryPage";
 import { HomePage } from "@/features/catalog/HomePage";
+import { SectionLayout } from "@/features/catalog/SectionLayout";
 import { SectionPage } from "@/features/catalog/SectionPage";
 import { NotFoundPage } from "@/app/pages/NotFoundPage";
 import { PlaceholderPage } from "@/app/pages/PlaceholderPage";
@@ -38,8 +39,15 @@ export const router = createBrowserRouter([
             : []),
           // A topic and its sections. Static routes above (questions, tags, search, dev/...) win over these dynamic ones.
           { path: ":category", element: <CategoryPage /> },
-          { path: ":category/:section", element: <SectionPage /> },
-          { path: ":category/:section/:entry", element: <PlaceholderPage title="Entry" module="M3" /> },
+          // A section: the layout (side panel) stays mounted while the visitor moves between its list page and its entries.
+          {
+            path: ":category/:section",
+            element: <SectionLayout />,
+            children: [
+              { index: true, element: <SectionPage /> },
+              { path: ":entry", element: <PlaceholderPage title="Entry" module="M3" /> },
+            ],
+          },
           { path: "*", element: <NotFoundPage /> },
         ],
       },

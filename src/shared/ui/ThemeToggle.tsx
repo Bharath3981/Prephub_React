@@ -5,7 +5,7 @@ import { buttonClass } from "@/shared/ui/Button";
 const NEXT: Record<ThemePreference, ThemePreference> = { light: "dark", dark: "system", system: "light" };
 const LABEL: Record<ThemePreference, string> = { light: "Light", dark: "Dark", system: "System" };
 
-const iconProps = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true } as const;
+const iconProps = { width: 22, height: 22, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", className: "shrink-0", "aria-hidden": true } as const;
 
 const icons: Record<ThemePreference, React.ReactNode> = {
   light: (
@@ -34,7 +34,7 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      className={buttonClass("ghost", "sm", "w-8 px-0")}
+      className={buttonClass("ghost", "md", "w-10 px-0!")}
       onClick={() => setPreference(next)}
       aria-label={`Theme: ${LABEL[preference]}. Switch to ${LABEL[next]}`}
       title={`Theme: ${LABEL[preference]}`}
