@@ -46,7 +46,7 @@ Pain to notice (this is why M2 adds a cache): go to another page and back, and t
 
 - [x] 2.1 Category page `/:category` with `useFetch`: the topic, its description and its section cards (kind badge, entry count), breadcrumbs, a skeleton, an error with retry, and the **404 page** for an unknown topic (the API's 404 `NOT_FOUND` is detected on the `ApiRequestError`)
 - [x] ~~2.2/2.3 hand-written query cache (`useQuery`)~~ built, measured and **removed on purpose**: this app stays on `useFetch`. The code is in git history (commit `2928c18`, 2.2 only; 2.3 was never committed). Lesson kept: a cache keyed by name, with `staleTime`, de-duplication, invalidation, prefetch, `gcTime` and retry, is exactly what TanStack Query provides; see the list below.
-- [ ] 2.4 Section layout, sidebar grouped by heading, entry list
+- [x] 2.4 Section page `/:category/:section`: header, sidebar (other sections + "On this page" headings with counts, jump links), entries grouped under their heading (kind, difficulty, tags), 404 for an unknown topic or section. Two `useFetch` calls run in parallel (topic, entries). Entry links go to `/:category/:section/:entry` (placeholder until M3). Checked: 45 rows = sum of the 5 heading counts; sidebar switch Concepts (40 rows, 8 headings); unknown section and topic show the 404 page; `SectionPage` 3 renders on load.
 - [ ] 2.5 Filters and pagination in the URL (`useSearchParamsState`, `keepPreviousData`)
 - [ ] 2.6 Memoised rows and the render budget
 
