@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Difficulty } from "@/features/catalog/types";
 import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
+import { useRenderCount } from "@/shared/dev/render-count";
 import { Button } from "@/shared/ui/Button";
 
 const LEVELS: { value: Difficulty | undefined; label: string }[] = [
@@ -22,6 +23,7 @@ interface Props {
 
 /** Difficulty buttons and a search box. The URL is the truth; the box keeps its own text while typing and writes to the URL after a pause. */
 export function EntryFilters({ difficulty, search, onDifficulty, onSearch }: Props) {
+  useRenderCount("EntryFilters");
   // What is in the box right now. It changes on every keystroke, so the box always feels instant.
   const [draft, setDraft] = useState(search);
   // The same text, but only after DEBOUNCE_MS without typing. This is the one allowed to touch the URL (and so the request).

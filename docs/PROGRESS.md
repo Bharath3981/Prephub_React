@@ -48,7 +48,19 @@ Pain to notice (this is why M2 adds a cache): go to another page and back, and t
 - [x] ~~2.2/2.3 hand-written query cache (`useQuery`)~~ built, measured and **removed on purpose**: this app stays on `useFetch`. The code is in git history (commit `2928c18`, 2.2 only; 2.3 was never committed). Lesson kept: a cache keyed by name, with `staleTime`, de-duplication, invalidation, prefetch, `gcTime` and retry, is exactly what TanStack Query provides; see the list below.
 - [x] 2.4 Section page `/:category/:section`: header, sidebar (other sections + "On this page" headings with counts, jump links), entries grouped under their heading (kind, difficulty, tags), 404 for an unknown topic or section. Two `useFetch` calls run in parallel (topic, entries). Entry links go to `/:category/:section/:entry` (placeholder until M3). Checked: 45 rows = sum of the 5 heading counts; sidebar switch Concepts (40 rows, 8 headings); unknown section and topic show the 404 page; `SectionPage` 3 renders on load.
 - [x] 2.5 Filters and pagination in the URL: `?page=2&difficulty=HARD&search=fib`. `useListParams` (reads and repairs the URL, a filter change goes back to page 1), `EntryFilters` (difficulty buttons, search box with a 300 ms pause, writes with `replace` so Back is not full of half-typed words), `Pagination` (real links), `useKeepPrevious` (the old page stays on screen, dimmed, while the next loads; dropped when the section changes). Checked: 20 per page (45 = 3 pages), page 2 shows 21 to 40, Hard = 11, 3 keystrokes = 1 request, Back restores the URL and the box, `?page=abc&difficulty=x` repaired, `?page=99` shows a message. **Bug found and fixed in `useFetch`:** for one render after `deps` changed it still returned the OLD data (a section switch showed the old section's rows under the new title). It now stores the deps with the result and reports "loading" until they match.
-- [ ] 2.6 Memoised rows and the render budget
+- [x] 2.6 Memoised rows and the render budget. Measured with `useRenderCount` (committed renders, all instances added up) on the section page; only fixes that the numbers justified were kept.
+
+  | Scenario (20 cards per page) | EntryRow before | after | SectionNav before | after | SectionPage before | after |
+  |---|---|---|---|---|---|---|
+  | type "fib", pause, result (1 card) | 41 | 1 | 2 | 0 | 3 | 2 |
+  | click Hard (11 cards) | 51 | 11 | 2 | 0 | 3 | 2 |
+  | click page 2 | 60 | 20 | 2 | 0 | 3 | 2 |
+  | open an entry (panel highlight moves) | 0 | 0 | 2 | 2 (needed) | 0 | 0 |
+  | back to the list | 20 | 20 | 2 | 2 | 2 | 2 |
+
+  **What was wasted and the fix:** (1) the 20 cards re-rendered twice per page change with the same `entry` while the old list was dimmed: `memo(EntryRow)`, which works because `useFetch` keeps the same data object. (2) The 45-link panel re-rendered on every search or page change: `memo` on the panel, `useMemo` for its `groups` array (a new array each render would defeat `memo`), and the open entry passed as a prop instead of `useParams()` inside the panel (a component that calls `useParams` re-renders on every navigation, whatever its props). (3) `useFetch` set "loading" in an effect when its inputs changed although it already reported "loading" for them: one redundant render on every page (SectionPage 3 to 2). Home and Category still 2 renders on load; the race demo still ends with the FAST result.
+
+  **Left alone on purpose:** `Pagination` (about 7 links) and `EntryFilters` (4 buttons and a box) re-render 2 times per change; their props include inline functions, so `memo` would need more `useCallback` code than it saves. The `Link`s inside the memoised panel still re-render on a location change (they read the router location), so the saving there is the panel's own render and the array walk, not the links.
 
 2.1 checked in the browser: `/react` shows 2 section cards linking to `/react/concepts` and `/react/interview-questions`; `/no-such-topic` shows
 the 404 page (not an error box); static routes (`/questions`, `/dev/ui`) win over the dynamic `/:category`; the same `CategoryPage` is reused when the
@@ -80,7 +92,7 @@ requests again, even though nothing changed. This is accepted in the pure-React 
 **Review of 2.4 (decision):** two anti-patterns were spotted. (1) Passing slugs down as props: fixed. `EntryRow` builds its link from the entry's own `categorySlug` and `sectionSlug`; `SectionSidebar` reads the open topic and section with `useParams` (the URL is already the single source of truth, so it is not copied into a store). (2) Refetching on every revisit: **kept on purpose** in this pure-React app and fixed by TanStack Query in the second app. A Zustand store was considered and not used for server data: it would rebuild the query cache (staleness, in-flight de-duplication, invalidation, races). Zustand is for client state (theme, auth user later).
 
 ## Next
-- [ ] M2 Category and section pages
+- [x] M2 Category and section pages
 - [ ] M3 Entry page, code editor view, tests start
 - [ ] M4 Questions and tags
 - [ ] M5 Search

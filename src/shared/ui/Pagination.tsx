@@ -1,4 +1,5 @@
 import { Link, type To } from "react-router";
+import { useRenderCount } from "@/shared/dev/render-count";
 import { cn } from "@/shared/lib/cn";
 
 /** 1, the pages around the current one, and the last: [1, "gap", 4, 5, 6, "gap", 20]. */
@@ -17,6 +18,7 @@ const base = "inline-flex h-9 min-w-9 items-center justify-center rounded-lg bor
 
 /** Previous, numbered pages and next. Every page is a real link, so it can be opened in a new tab and works with the Back button. */
 export function Pagination({ page, totalPages, to }: { page: number; totalPages: number; to: (page: number) => To }) {
+  useRenderCount("Pagination");
   if (totalPages <= 1) return null;
   return (
     <nav aria-label="Pages" className="flex flex-wrap items-center gap-2">
