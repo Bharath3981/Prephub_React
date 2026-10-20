@@ -1,10 +1,10 @@
 import { useParams } from "react-router";
-import { categoryQuery } from "@/features/catalog/queries";
+import { getCategory } from "@/features/catalog/api";
 import { SectionCard } from "@/features/catalog/SectionCard";
 import { NotFoundPage } from "@/app/pages/NotFoundPage";
 import { ApiRequestError } from "@/shared/api/client";
 import { useRenderCount } from "@/shared/dev/render-count";
-import { useQuery } from "@/shared/query/useQuery";
+import { useFetch } from "@/shared/hooks/useFetch";
 import { Breadcrumbs } from "@/shared/ui/Breadcrumbs";
 import { ErrorState } from "@/shared/ui/ErrorState";
 import { Skeleton } from "@/shared/ui/Skeleton";
@@ -34,14 +34,14 @@ function CategoryPageSkeleton() {
 export function CategoryPage() {
   useRenderCount("CategoryPage");
   // The URL decides what to load. When it changes (/react to /javascript) the same component is reused with a new slug,
-  // so the slug is part of the query key: the cache entry changes with it (and a cached one is shown at once).
+  // so the slug is a dependency of useFetch: the old request is cancelled and a new one starts.
   const { category: slug = "" } = useParams();
-  const result = useQuery(categoryQuery(slug));
+  const result = useFetch((signal) => getCategory(slug, signal), [slug]);
 
   // The API answers 404 for an unknown slug: show the "not found" page, not a generic error.
   if (result.status === "error" && result.error instanceof ApiRequestError && result.error.status === 404) return <NotFoundPage />;
   if (result.status === "loading") return <CategoryPageSkeleton />;
-  if (result.status === "error") return <ErrorState title="Could not load this topic" error={result.error ?? new Error("Unknown error")} onRetry={result.refetch} />;
+  if (result.status === "error") return <ErrorState title="Could not load this topic" error={result.error} onRetry={result.reload} />;
 
   const category = result.data;
   return (

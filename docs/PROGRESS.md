@@ -42,11 +42,10 @@ validating server data with Zod, accessible loading and error states (#44).
 
 Pain to notice (this is why M2 adds a cache): go to another page and back, and the topics are requested again.
 
-## M2 Category and section pages, and the query cache: in progress
+## M2 Category and section pages: in progress
 
 - [x] 2.1 Category page `/:category` with `useFetch`: the topic, its description and its section cards (kind badge, entry count), breadcrumbs, a skeleton, an error with retry, and the **404 page** for an unknown topic (the API's 404 `NOT_FOUND` is detected on the `ApiRequestError`)
-- [x] 2.2 Query cache v1 (`useQuery`: keys, de-duplication, `staleTime`, `isFetching`) in `src/shared/query/`. Measured: Home → React → Home → React = 2 requests in total (was 4+); two calls for one key = 1 request.
-- [ ] 2.3 Cache v2 (invalidate, prefetch on hover, refetch on focus, `gcTime`)
+- [x] ~~2.2/2.3 hand-written query cache (`useQuery`)~~ built, measured and **removed on purpose**: this app stays on `useFetch`. The code is in git history (commit `2928c18`, 2.2 only; 2.3 was never committed). Lesson kept: a cache keyed by name, with `staleTime`, de-duplication, invalidation, prefetch, `gcTime` and retry, is exactly what TanStack Query provides; see the list below.
 - [ ] 2.4 Section layout, sidebar grouped by heading, entry list
 - [ ] 2.5 Filters and pagination in the URL (`useSearchParamsState`, `keepPreviousData`)
 - [ ] 2.6 Memoised rows and the render budget
@@ -58,10 +57,26 @@ on the slug plus the abort and ignore logic of `useFetch`). Render budget: `Cate
 (the new slug, loading, data).
 
 **The pain, measured:** Home to React to Home to React sent 3 new requests (`/categories/react`, `/categories`, `/categories/react`): every visit
-requests again, even though nothing changed. Step 2.2 adds the cache.
+requests again, even though nothing changed. This is accepted in the pure-React version; the TanStack version fixes it.
+
+### What we get with TanStack Query (to build and compare in the second app)
+| Pain in the `useFetch` app | TanStack Query |
+|---|---|
+| Revisiting a page refetches and shows a skeleton | cached data shown at once, refreshed in the background (`staleTime`) |
+| Two components, same data = two requests | de-duplicated by query key |
+| No way to refresh after a change | `invalidateQueries` |
+| Click waits for the request | `prefetchQuery` on hover |
+| Stale tab on return | `refetchOnWindowFocus` |
+| Unused data stays or is lost | `gcTime` cleanup |
+| One network blip shows an error | automatic `retry` with backoff |
+| `reload` counter, manual `loading/error/success` state | `status`, `isFetching`, `isPending`, `refetch` |
+| Filters and pages flash a skeleton | `placeholderData: keepPreviousData` |
+| Writes need hand-made state | `useMutation`, optimistic updates |
+| Long lists | `useInfiniteQuery` |
+| Debugging a cache | React Query DevTools |
 
 ## Next
-- [ ] M2 Category and section pages, the query cache
+- [ ] M2 Category and section pages
 - [ ] M3 Entry page, code editor view, tests start
 - [ ] M4 Questions and tags
 - [ ] M5 Search
