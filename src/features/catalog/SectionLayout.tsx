@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Outlet, useParams } from "react-router";
 import { NotFoundPage } from "@/app/pages/NotFoundPage";
 import { getCategory, getEntries } from "@/features/catalog/api";
-import { navGroups } from "@/features/catalog/group-entries";
+import { navGroups, type NavItem } from "@/features/catalog/group-entries";
 import { SectionNavDesktop, SectionNavMobile, SectionNavSkeleton } from "@/features/catalog/SectionNav";
 import type { DeliveryCategoryDetail, DeliverySection } from "@/features/catalog/types";
 import { isNotFound } from "@/shared/api/not-found";
@@ -15,6 +15,8 @@ import { Skeleton } from "@/shared/ui/Skeleton";
 export interface SectionContext {
   category: DeliveryCategoryDetail;
   section: DeliverySection;
+  /** The section's entries in the order of the side panel (group by group), for previous and next. null while loading or for a section with fewer than 2 entries. */
+  entryOrder: NavItem[] | null;
 }
 
 /**
@@ -32,6 +34,7 @@ export function SectionLayout() {
   // Built once per load, not once per render: the memoised panel only skips a render if it gets the SAME array.
   const allEntries = all.status === "success" ? all.data.entries : null;
   const groups = useMemo(() => (allEntries && allEntries.length >= 2 ? navGroups(allEntries) : null), [allEntries]);
+  const entryOrder = useMemo(() => groups?.flatMap((group) => group.items) ?? null, [groups]);
 
   if (isNotFound(category)) return <NotFoundPage />;
   if (category.status === "error") return <ErrorState title="Could not load this topic" error={category.error} onRetry={category.reload} />;
@@ -52,7 +55,7 @@ export function SectionLayout() {
   // A section with a single entry has nothing to navigate. The panel is a convenience: if its request fails, the page still works.
   const showNav = all.status === "loading" || groups !== null;
   const nav = { category: category.data.slug, section: section.slug, sectionName: section.name, current: currentEntry };
-  const context: SectionContext = { category: category.data, section };
+  const context: SectionContext = { category: category.data, section, entryOrder };
 
   return (
     <div className={showNav ? "lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10" : undefined}>

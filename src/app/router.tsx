@@ -4,6 +4,7 @@ import { DevBoomPage } from "@/app/pages/DevBoomPage";
 import { DevRacePage } from "@/app/pages/DevRacePage";
 import { DevUiPage } from "@/app/pages/DevUiPage";
 import { CategoryPage } from "@/features/catalog/CategoryPage";
+import { EntryPage } from "@/features/catalog/EntryPage";
 import { HomePage } from "@/features/catalog/HomePage";
 import { SectionLayout } from "@/features/catalog/SectionLayout";
 import { SectionPage } from "@/features/catalog/SectionPage";
@@ -45,7 +46,7 @@ export const router = createBrowserRouter([
             element: <SectionLayout />,
             children: [
               { index: true, element: <SectionPage /> },
-              { path: ":entry", element: <PlaceholderPage title="Entry" module="M3" /> },
+              { path: ":entry", element: <EntryPage /> },
             ],
           },
           { path: "*", element: <NotFoundPage /> },

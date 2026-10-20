@@ -1,9 +1,14 @@
 import type { EntrySummary } from "@/features/catalog/types";
 
+export interface NavItem {
+  slug: string;
+  title: string;
+}
+
 export interface NavGroup {
   /** The heading as the API names it ("4. Hooks"), or null when the section has no headings at all. */
   heading: string | null;
-  items: { slug: string; title: string }[];
+  items: NavItem[];
 }
 
 /**
