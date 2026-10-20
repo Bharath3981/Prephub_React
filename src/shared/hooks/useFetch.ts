@@ -31,8 +31,10 @@ export function useFetch<T>(fetcher: (signal: AbortSignal) => Promise<T>, deps: 
   useEffect(() => {
     const controller = new AbortController();
 
-    // Show "loading" again, but if we are already loading return the SAME object so React skips the re-render.
-    setStored((current) => (current.state.status === "loading" && sameDeps(current.deps, deps) ? current : { state: LOADING, deps }));
+    // Only a reload() (same deps, a result on screen) needs to go back to "loading" here. When the deps changed, the
+    // result below is already reported as "loading" (see the end of this hook), and returning the SAME object makes
+    // React skip a re-render that would draw exactly the same screen.
+    setStored((current) => (sameDeps(current.deps, deps) && current.state.status !== "loading" ? { state: LOADING, deps } : current));
 
     fetcher(controller.signal).then(
       (data) => {

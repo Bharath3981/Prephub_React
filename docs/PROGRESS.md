@@ -88,12 +88,12 @@ Only components that tell us something are counted. Small UI pieces (Badge, Butt
 | `RootLayout`, `Header` | the shell must not re-render when a page changes | 1 render on load, 0 on every navigation | good |
 | `HomePage`, `CategoryPage` | a page's budget: loading, then data | 2 renders each | good (the minimum) |
 | `SectionLayout` | the frame around the list and the entries | 2 on load, 1 per navigation | good |
-| `SectionPage` | the list page | 2 on load, **3** per page or filter change | one redundant render (`useFetch` sets "loading" in an effect after already reporting it); harmless, fix is one line |
-| `EntryRow` (20 per page) | the biggest list | **60** renders for one page change (20 new + the old 20 twice with the same data) | watch: ~40 cheap renders; `memo` would remove them, not needed at this size |
-| `SectionNav` (45 links, desktop and mobile copies) | the biggest panel | 2 renders on every filter or page change although nothing in it changed | watch: needs `memo` + a stable `groups` array to skip; not needed at this size |
-| `EntryFilters`, `Pagination` | rebuilt on every list change | 3 per change | fine, tiny and cheap |
+| `SectionPage` | the list page | 2 on load, **2** per page or filter change (was 3: `useFetch` no longer sets "loading" a second time) | good (the minimum: dimmed old list, then data) |
+| `EntryRow` (20 per page) | the biggest list | after refresh 20, after clicking Easy 29 (**was 69**): `memo`, works because `useFetch` keeps the same `entry` objects | fixed with `memo` |
+| `SectionNav` (45 links, desktop and mobile copies) | the biggest panel | 2 on load, **0** on a filter or page change, 2 when the open entry changes (needed) | fixed: `memo`, `useMemo` for the `groups` array, and the open entry passed as a prop (not `useParams` inside) |
+| `EntryFilters`, `Pagination` | rebuilt on every list change | 2 per change (3 before) | fine, tiny and cheap. Not memoised: their props include inline functions, so `memo` would also need `useCallback` on every prop |
 
-Decision: no fix is required at this size. The optional fixes (a one-line `useFetch` change, `memo` on `EntryRow` and the panel) were tried in 2.6, measured, and then reverted on purpose; they stay in git history (`7b67060`).
+Decision: `memo` on `EntryRow` and the panel, `useMemo` for the panel's `groups`, and a one-line `useFetch` change were applied again after the section page numbers were reviewed (the same set as the reverted 2.6 commit `7b67060`, without the `Pagination` and `EntryFilters` changes).
 
 ## Next
 - [ ] M2 Category and section pages
