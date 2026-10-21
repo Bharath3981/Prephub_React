@@ -180,4 +180,72 @@ body {
     max-width: 100%;
     height: auto;
   }
+
+  /* A code sample (CodeBlock): a header bar with the language and the Copy button, then the code. */
+  .entry-body .code-block {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
+  .entry-body .code-block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem 0.25rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: lowercase;
+  }
+  .entry-body .code-block pre {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+}
+
+/* Syntax colours (highlight.js class names), from the same tokens, so they follow the light and dark theme. */
+.hljs-comment,
+.hljs-quote,
+.hljs-meta {
+  color: var(--muted);
+  font-style: italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-doctag,
+.hljs-tag,
+.hljs-name {
+  color: var(--accent);
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-symbol {
+  color: var(--success);
+}
+.hljs-number,
+.hljs-built_in,
+.hljs-type,
+.hljs-bullet {
+  color: var(--warning);
+}
+.hljs-title,
+.hljs-section,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: var(--accent-strong);
+}
+.hljs-deletion {
+  color: var(--danger);
+}
+.hljs-emphasis {
+  font-style: italic;
+}
+.hljs-strong {
+  font-weight: 700;
 }
