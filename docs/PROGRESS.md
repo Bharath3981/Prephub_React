@@ -101,7 +101,7 @@ Decision: `memo` on `EntryRow` and the panel, `useMemo` for the panel's `groups`
 The entry endpoint (`GET /delivery/categories/{c}/sections/{s}/entries/{slug}`) sends the body as **HTML** (`bodyHtml`, built by the API from markdown; tags used: `p`, `ul`, `li`, `table`, `strong`, `a`, `code`, `pre` with `class="language-js"`), plus `meta` (`followUps`, `readingMinutes`), `related`, `category`, `section`, dates. An unknown slug gives a 404 `NOT_FOUND`.
 
 - [x] 3.1 Entry page shell `/:category/:section/:entry`: header (breadcrumbs, kind, difficulty, title, reading time, updated date, tags), summary, previous and next in side-panel order (`EntryPager`, fed by `entryOrder` from the layout's outlet context), 404, skeleton. Checked: the panel element is the same after clicking Next (the layout stays mounted), the highlight follows, the first entry has only Next, an unknown entry shows 404 with the panel kept, a concept entry has no difficulty badge.
-- [ ] 3.2 Safe body: sanitise `bodyHtml` (DOMPurify), styles, internal links through the router, wide tables scroll
+- [x] 3.2 Safe body: `EntryBody` shows `bodyHtml` after `sanitizeHtml` (DOMPurify 3.2.6, **allow-list** of tags and attributes; `class` kept only as `language-*`; no `style`, `data-*` or event handlers; links to other sites get `target="_blank"` and `rel="noopener noreferrer"`). Sanitised once per body with `useMemo`. Clicks on links to our own pages go through the router (one click handler on the container, no reload). Styles by tag in `index.css` (`.entry-body`); wide tables and code scroll inside the page. Checked: 12 attack strings neutralised (`script`, `onerror`, `javascript:` and `data:` links, `svg onload`, `iframe`, `form`, `style` attribute, `onclick`, free `class`, `data-*`, a mutation-XSS payload) and `window.__pwned` never set; three real entries come out with the same element and text counts; no sideways page scroll at 375px on Home, topic, section and entry (this needed a tighter header: `gap-3 sm:gap-6`, link padding `px-2 sm:px-3`).
 - [ ] 3.3 Tests start: Vitest and React Testing Library (sanitiser, `list-params`, `navGroups`, `useDebouncedValue`, `useFetch`, `Pagination`)
 - [ ] 3.4 Code blocks: parse into React elements, `CodeBlock` with copy button and lazy syntax highlighting
 - [ ] 3.5 Code editor view (like the Next.js app's source viewer and playground link)
@@ -110,7 +110,7 @@ The entry endpoint (`GET /delivery/categories/{c}/sections/{s}/entries/{slug}`) 
 
 ## Next
 - [ ] M2 Category and section pages
-- [ ] M3 Entry page, code editor view, tests start (3.1 done)
+- [ ] M3 Entry page, code editor view, tests start (3.1 and 3.2 done)
 - [ ] M4 Questions and tags
 - [ ] M5 Search
 - [ ] M6 Public polish and quality

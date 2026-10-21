@@ -14,7 +14,8 @@ export function Header() {
   useRenderCount("Header");
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur">
-      <Container className="flex h-14 items-center gap-6">
+      {/* Tighter spacing on a phone: logo, three links and the theme button must fit in 375px without a sideways scroll. */}
+      <Container className="flex h-14 items-center gap-3 sm:gap-6">
         <Link to="/" className="text-lg font-bold tracking-tight">
           PrepHub
         </Link>
@@ -24,7 +25,7 @@ export function Header() {
               key={link.to}
               to={link.to}
               // NavLink gives us isActive; aria-current="page" is added automatically
-              className={({ isActive }) => cn("rounded-md px-3 py-1.5 hover:bg-surface-2", isActive ? "font-semibold text-foreground" : "text-muted")}
+              className={({ isActive }) => cn("rounded-md px-2 py-1.5 hover:bg-surface-2 sm:px-3", isActive ? "font-semibold text-foreground" : "text-muted")}
             >
               {link.label}
             </NavLink>

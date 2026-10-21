@@ -1,6 +1,7 @@
 import { useOutletContext, useParams } from "react-router";
 import { NotFoundPage } from "@/app/pages/NotFoundPage";
 import { getEntry } from "@/features/catalog/api";
+import { EntryBody } from "@/features/catalog/EntryBody";
 import { EntryPager } from "@/features/catalog/EntryPager";
 import type { SectionContext } from "@/features/catalog/SectionLayout";
 import { isNotFound } from "@/shared/api/not-found";
@@ -36,7 +37,7 @@ function EntryPageSkeleton() {
  *
  *   1. HEADER   breadcrumbs, kind and difficulty, title, reading time and date, tags
  *   2. SUMMARY  the short answer
- *   3. BODY     the full answer (step 3.2)
+ *   3. BODY     the full answer: HTML from the API, sanitised first
  *   4. PAGER    previous and next entry, in the order of the side panel
  */
 export function EntryPage() {
@@ -81,8 +82,8 @@ export function EntryPage() {
       {/* ===== 2. SUMMARY ===== */}
       {entry.summary && <p className="max-w-3xl text-lg text-muted">{entry.summary}</p>}
 
-      {/* ===== 3. BODY: rendered safely in step 3.2 ===== */}
-      <Badge tone="warning">The full answer arrives in step 3.2</Badge>
+      {/* ===== 3. BODY: HTML from the API, sanitised, then shown (code blocks become components in step 3.4) ===== */}
+      <EntryBody html={entry.bodyHtml} />
 
       {/* ===== 4. PAGER ===== */}
       <EntryPager categorySlug={category.slug} sectionSlug={section.slug} order={entryOrder} current={entry.slug} />
