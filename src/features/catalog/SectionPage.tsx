@@ -8,6 +8,7 @@ import { PAGE_SIZE, useListParams } from "@/features/catalog/list-params";
 import type { SectionContext } from "@/features/catalog/SectionLayout";
 import { isNotFound } from "@/shared/api/not-found";
 import { useRenderCount } from "@/shared/dev/render-count";
+import { useDocumentTitle } from "@/shared/hooks/useDocumentTitle";
 import { useFetch } from "@/shared/hooks/useFetch";
 import { useKeepPrevious } from "@/shared/hooks/useKeepPrevious";
 import { Breadcrumbs } from "@/shared/ui/Breadcrumbs";
@@ -92,7 +93,10 @@ export function SectionPage() {
   // WHOLE-PAGE STATES: nothing to draw
   // ---------------------------------------------------------------------------------------------
 
-  if (isNotFound(entries)) return <NotFoundPage />;
+  const missing = isNotFound(entries);
+  useDocumentTitle(missing ? "Page not found" : `${section.name} · ${category.name}`);
+
+  if (missing) return <NotFoundPage />;
 
   // ---------------------------------------------------------------------------------------------
   // VALUES FOR THE SCREEN
@@ -142,7 +146,7 @@ export function SectionPage() {
               {meta.page > 1 && meta.total > 0 ? (
                 <>
                   There is no page {meta.page}.{" "}
-                  <Link to={to({ page: 1 })} className="text-accent underline">
+                  <Link to={to({ page: 1 })} preventScrollReset className="text-accent underline">
                     Go to the first page
                   </Link>
                   .
@@ -150,7 +154,7 @@ export function SectionPage() {
               ) : filtered ? (
                 <>
                   No entries match these filters.{" "}
-                  <Link to={to({ difficulty: undefined, search: "" })} className="text-accent underline">
+                  <Link to={to({ difficulty: undefined, search: "" })} preventScrollReset className="text-accent underline">
                     Clear the filters
                   </Link>
                 </>

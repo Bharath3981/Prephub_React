@@ -4,6 +4,7 @@ import { SectionCard } from "@/features/catalog/SectionCard";
 import { NotFoundPage } from "@/app/pages/NotFoundPage";
 import { ApiRequestError } from "@/shared/api/client";
 import { useRenderCount } from "@/shared/dev/render-count";
+import { useDocumentTitle } from "@/shared/hooks/useDocumentTitle";
 import { useFetch } from "@/shared/hooks/useFetch";
 import { Breadcrumbs } from "@/shared/ui/Breadcrumbs";
 import { ErrorState } from "@/shared/ui/ErrorState";
@@ -37,9 +38,11 @@ export function CategoryPage() {
   // so the slug is a dependency of useFetch: the old request is cancelled and a new one starts.
   const { category: slug = "" } = useParams();
   const result = useFetch((signal) => getCategory(slug, signal), [slug]);
+  const notFound = result.status === "error" && result.error instanceof ApiRequestError && result.error.status === 404;
+  useDocumentTitle(notFound ? "Page not found" : result.status === "success" ? result.data.name : undefined);
 
   // The API answers 404 for an unknown slug: show the "not found" page, not a generic error.
-  if (result.status === "error" && result.error instanceof ApiRequestError && result.error.status === 404) return <NotFoundPage />;
+  if (notFound) return <NotFoundPage />;
   if (result.status === "loading") return <CategoryPageSkeleton />;
   if (result.status === "error") return <ErrorState title="Could not load this topic" error={result.error} onRetry={result.reload} />;
 

@@ -29,6 +29,7 @@ export const router = createBrowserRouter([
           { index: true, element: <HomePage /> },
           { path: "questions", element: <PlaceholderPage title="Questions" module="M4" /> },
           { path: "tags", element: <PlaceholderPage title="Tags" module="M4" /> },
+          { path: "tags/:tag", element: <PlaceholderPage title="Tag" module="M4" /> },
           { path: "search", element: <PlaceholderPage title="Search" module="M5" /> },
           // Development-only pages: a crash test, the race condition demo and the UI components.
           ...(import.meta.env.DEV

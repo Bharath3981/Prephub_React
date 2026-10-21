@@ -1,6 +1,7 @@
-import { Outlet } from "react-router";
+import { Outlet, ScrollRestoration } from "react-router";
 import { Footer } from "@/app/layouts/Footer";
 import { Header } from "@/app/layouts/Header";
+import { RouteAnnouncer, RouteFocus } from "@/app/layouts/RouteEffects";
 import { useRenderCount } from "@/shared/dev/render-count";
 import { RenderPanel } from "@/shared/dev/RenderPanel";
 import { Container } from "@/shared/ui/Container";
@@ -18,12 +19,17 @@ export function RootLayout() {
         Skip to content
       </a>
       <Header />
-      <main id="main" className="flex-1 py-8">
+      {/* tabIndex -1: the skip link and RouteFocus can move focus here, but it is not a stop when tabbing. */}
+      <main id="main" tabIndex={-1} className="flex-1 py-8 focus:outline-none">
         <Container>
           <Outlet />
         </Container>
       </main>
       <Footer />
+      {/* Page-change polish for a single-page app: scroll to the top (and restore the scroll on Back), focus the content, announce the new title. */}
+      <ScrollRestoration />
+      <RouteFocus />
+      <RouteAnnouncer />
       {import.meta.env.DEV && <RenderPanel />}
     </div>
   );

@@ -81,7 +81,13 @@ export const entryDetailSchema = entrySummarySchema.extend({
   publishedAt: z.string().nullable(),
   updatedAt: z.string(),
   bodyHtml: z.string(),
-  meta: z.object({ followUps: z.array(z.string()).optional(), readingMinutes: z.number().optional() }),
+  // What `meta` holds depends on the kind: questions have followUps, examples have a scenario and a language, lessons have a reading time.
+  meta: z.object({
+    followUps: z.array(z.string()).optional(),
+    readingMinutes: z.number().optional(),
+    scenario: z.string().optional(),
+    language: z.string().optional(),
+  }),
   category: z.object({ name: z.string(), slug: z.string() }),
   section: z.object({ name: z.string(), slug: z.string(), kind: kindSchema }),
   related: z.array(entryLinkSchema),

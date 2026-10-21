@@ -29,7 +29,7 @@ export const Pagination = memo(function Pagination({ page, totalPages, to }: { p
   return (
     <nav aria-label="Pages" className="flex flex-wrap items-center gap-2">
       {page > 1 ? (
-        <Link to={to(page - 1)} className={cn(base, "border-border bg-surface hover:border-accent")}>
+        <Link to={to(page - 1)} preventScrollReset className={cn(base, "border-border bg-surface hover:border-accent")}>
           Previous
         </Link>
       ) : (
@@ -47,6 +47,7 @@ export const Pagination = memo(function Pagination({ page, totalPages, to }: { p
           <Link
             key={item}
             to={to(item)}
+            preventScrollReset // the list scrolls itself to its top (SectionPage), not to the top of the whole page
             aria-label={`Page ${item}`}
             aria-current={item === page ? "page" : undefined}
             className={cn(base, item === page ? "border-accent bg-accent-soft font-medium text-accent-strong" : "border-border bg-surface hover:border-accent")}
@@ -57,7 +58,7 @@ export const Pagination = memo(function Pagination({ page, totalPages, to }: { p
       )}
 
       {page < totalPages ? (
-        <Link to={to(page + 1)} className={cn(base, "border-border bg-surface hover:border-accent")}>
+        <Link to={to(page + 1)} preventScrollReset className={cn(base, "border-border bg-surface hover:border-accent")}>
           Next
         </Link>
       ) : (

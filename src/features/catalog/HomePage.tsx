@@ -1,6 +1,7 @@
 import { getCategories } from "@/features/catalog/api";
 import { CategoryCard } from "@/features/catalog/CategoryCard";
 import { useRenderCount } from "@/shared/dev/render-count";
+import { useDocumentTitle } from "@/shared/hooks/useDocumentTitle";
 import { useFetch } from "@/shared/hooks/useFetch";
 import { ErrorState } from "@/shared/ui/ErrorState";
 import { Skeleton } from "@/shared/ui/Skeleton";
@@ -25,6 +26,7 @@ function CategoryGridSkeleton() {
 
 export function HomePage() {
   useRenderCount("HomePage");
+  useDocumentTitle();
   const categories = useFetch(getCategories, []);
 
   return (

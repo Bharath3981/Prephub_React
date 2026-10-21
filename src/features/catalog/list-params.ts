@@ -44,9 +44,9 @@ export function useListParams() {
 
   /** Where a link goes after this change (for pagination links and "clear filters"). */
   const to = useCallback((patch: Partial<ListParams>): To => ({ search: buildSearch({ page, difficulty, search }, patch) }), [page, difficulty, search]);
-  /** Apply a change now. `replace` rewrites the current history entry (use it while typing, so Back is not full of half-typed searches). */
+  /** Apply a change now. `replace` rewrites the current history entry (use it while typing, so Back is not full of half-typed searches). The scroll position stays (preventScrollReset). */
   const change = useCallback(
-    (patch: Partial<ListParams>, options?: { replace?: boolean }) => setSearchParams(buildSearch({ page, difficulty, search }, patch), options),
+    (patch: Partial<ListParams>, options?: { replace?: boolean }) => setSearchParams(buildSearch({ page, difficulty, search }, patch), { ...options, preventScrollReset: true }),
     [page, difficulty, search, setSearchParams],
   );
 

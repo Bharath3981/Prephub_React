@@ -2,13 +2,14 @@ import { useOutletContext, useParams } from "react-router";
 import { NotFoundPage } from "@/app/pages/NotFoundPage";
 import { getEntry } from "@/features/catalog/api";
 import { EntryBody } from "@/features/catalog/EntryBody";
+import { EntryExtras } from "@/features/catalog/EntryExtras";
 import { EntryPager } from "@/features/catalog/EntryPager";
 import type { SectionContext } from "@/features/catalog/SectionLayout";
 import { usesCodeEditor } from "@/shared/lib/playground-link";
 import { isNotFound } from "@/shared/api/not-found";
 import { useRenderCount } from "@/shared/dev/render-count";
+import { useDocumentTitle } from "@/shared/hooks/useDocumentTitle";
 import { useFetch } from "@/shared/hooks/useFetch";
-import { Badge } from "@/shared/ui/Badge";
 import { Breadcrumbs } from "@/shared/ui/Breadcrumbs";
 import { DifficultyBadge } from "@/shared/ui/DifficultyBadge";
 import { ErrorState } from "@/shared/ui/ErrorState";
@@ -36,10 +37,11 @@ function EntryPageSkeleton() {
  * Like SectionPage, this file is only the right-hand part of the screen: the side panel comes from SectionLayout and
  * stays mounted while you move from entry to entry.
  *
- *   1. HEADER   breadcrumbs, kind and difficulty, title, reading time and date, tags
+ *   1. HEADER   breadcrumbs, kind and difficulty, title, reading time and date
  *   2. SUMMARY  the short answer
  *   3. BODY     the full answer: HTML from the API, sanitised first
- *   4. PAGER    previous and next entry, in the order of the side panel
+ *   4. EXTRAS   follow-up questions, tags as links, related entries
+ *   5. PAGER    previous and next entry, in the order of the side panel
  */
 export function EntryPage() {
   useRenderCount("EntryPage");
@@ -48,7 +50,10 @@ export function EntryPage() {
 
   const result = useFetch((signal) => getEntry(category.slug, section.slug, slug, signal), [category.slug, section.slug, slug]);
 
-  if (isNotFound(result)) return <NotFoundPage />;
+  const missing = isNotFound(result);
+  useDocumentTitle(missing ? "Page not found" : result.status === "success" ? result.data.title : undefined);
+
+  if (missing) return <NotFoundPage />;
   if (result.status === "error") return <ErrorState title="Could not load this entry" error={result.error} onRetry={result.reload} />;
   if (result.status === "loading") return <EntryPageSkeleton />;
 
@@ -69,15 +74,6 @@ export function EntryPage() {
           {entry.meta.readingMinutes !== undefined && <>{entry.meta.readingMinutes} min read · </>}
           Updated <time dateTime={entry.updatedAt}>{dateFormat.format(updated)}</time>
         </p>
-        {entry.tags.length > 0 && (
-          <ul className="flex flex-wrap gap-1.5" aria-label="Tags">
-            {entry.tags.map((tag) => (
-              <li key={tag.slug}>
-                <Badge>{tag.name}</Badge>
-              </li>
-            ))}
-          </ul>
-        )}
       </header>
 
       {/* ===== 2. SUMMARY ===== */}
@@ -86,7 +82,10 @@ export function EntryPage() {
       {/* ===== 3. BODY: HTML from the API, sanitised, then shown (code blocks become components in step 3.4) ===== */}
       <EntryBody html={entry.bodyHtml} editor={usesCodeEditor(category.slug, section.slug)} />
 
-      {/* ===== 4. PAGER ===== */}
+      {/* ===== 4. EXTRAS: follow-up questions (or an example's scenario), tags, related entries ===== */}
+      <EntryExtras entry={entry} />
+
+      {/* ===== 5. PAGER ===== */}
       <EntryPager categorySlug={category.slug} sectionSlug={section.slug} order={entryOrder} current={entry.slug} />
     </article>
   );
