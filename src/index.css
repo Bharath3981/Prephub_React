@@ -197,7 +197,6 @@ body {
     border-bottom: 1px solid var(--border);
     font-size: 0.75rem;
     color: var(--muted);
-    text-transform: lowercase;
   }
   .entry-body .code-block pre {
     margin: 0;

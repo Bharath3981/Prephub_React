@@ -4,6 +4,7 @@ import { getEntry } from "@/features/catalog/api";
 import { EntryBody } from "@/features/catalog/EntryBody";
 import { EntryPager } from "@/features/catalog/EntryPager";
 import type { SectionContext } from "@/features/catalog/SectionLayout";
+import { usesCodeEditor } from "@/shared/lib/playground-link";
 import { isNotFound } from "@/shared/api/not-found";
 import { useRenderCount } from "@/shared/dev/render-count";
 import { useFetch } from "@/shared/hooks/useFetch";
@@ -83,7 +84,7 @@ export function EntryPage() {
       {entry.summary && <p className="max-w-3xl text-lg text-muted">{entry.summary}</p>}
 
       {/* ===== 3. BODY: HTML from the API, sanitised, then shown (code blocks become components in step 3.4) ===== */}
-      <EntryBody html={entry.bodyHtml} />
+      <EntryBody html={entry.bodyHtml} editor={usesCodeEditor(category.slug, section.slug)} />
 
       {/* ===== 4. PAGER ===== */}
       <EntryPager categorySlug={category.slug} sectionSlug={section.slug} order={entryOrder} current={entry.slug} />

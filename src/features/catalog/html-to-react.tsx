@@ -12,7 +12,7 @@ const REACT_ATTRIBUTE: Record<string, string> = { class: "className", colspan: "
 
 const LANGUAGE = /(?:^|\s)language-([\w+-]+)/;
 
-function convert(node: Node, key: number): ReactNode {
+function convert(node: Node, key: number, editor: boolean): ReactNode {
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.textContent ?? "";
     const parent = node.parentElement?.tagName.toLowerCase();
@@ -28,10 +28,10 @@ function convert(node: Node, key: number): ReactNode {
     const code = element.querySelector("code");
     const language = LANGUAGE.exec(code?.getAttribute("class") ?? "")?.[1] ?? null;
     const text = (element.textContent ?? "").replace(/\n$/, ""); // every code block in the content ends with one extra newline
-    return <CodeBlock key={key} code={text} language={language === "text" ? null : language} />;
+    return <CodeBlock key={key} code={text} language={language === "text" ? null : language} editor={editor} />;
   }
 
-  const children = Array.from(element.childNodes).map(convert);
+  const children = Array.from(element.childNodes).map((child, index) => convert(child, index, editor));
 
   // A link to one of our own pages goes through the router (no reload). Other links stay plain <a> tags.
   if (tag === "a") {
@@ -55,8 +55,9 @@ function convert(node: Node, key: number): ReactNode {
  *
  * Why not just dangerouslySetInnerHTML? Because then a code sample is only text inside a string. Here a <pre> can become a
  * real component (CodeBlock) with a button and state, and plain text goes through React, which escapes it.
+ * `editor` says whether JavaScript and TypeScript samples use the code editor view (see usesCodeEditor).
  */
-export function htmlToReact(html: string): ReactNode[] {
+export function htmlToReact(html: string, { editor = false }: { editor?: boolean } = {}): ReactNode[] {
   const document = new DOMParser().parseFromString(sanitizeHtml(html), "text/html");
-  return Array.from(document.body.childNodes).map(convert);
+  return Array.from(document.body.childNodes).map((node, index) => convert(node, index, editor));
 }
