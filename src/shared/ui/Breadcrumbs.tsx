@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Link } from "react-router";
 
 export interface Crumb {
@@ -7,7 +8,7 @@ export interface Crumb {
 }
 
 /** "Home / React / Interview Questions". The last item is the current page and is not a link. */
-export function Breadcrumbs({ items }: { items: Crumb[] }) {
+export const Breadcrumbs = memo(function({ items }: { items: Crumb[] }) {
   return (
     <nav aria-label="Breadcrumb" className="text-sm text-muted">
       <ol className="flex flex-wrap items-center gap-1.5">
@@ -28,4 +29,4 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
       </ol>
     </nav>
   );
-}
+});

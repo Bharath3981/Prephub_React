@@ -51,8 +51,13 @@ const Nav = memo(function Nav({ category, section, sectionName, groups, current 
   );
 });
 
-/** The side panel on wide screens. It scrolls on its own; when it first appears, the open entry is brought into view. */
-export function SectionNavDesktop(props: NavProps) {
+/**
+ * The side panel on wide screens. It scrolls on its own; when it first appears, the open entry is brought into view.
+ *
+ * memo: SectionLayout renders on every filter or page change (the URL changed). SectionLayout builds this panel's props
+ * from strings and the memoised `groups` array, so they are equal to last time and memo skips the render.
+ */
+export const SectionNavDesktop = memo(function SectionNavDesktop(props: NavProps) {
   const scroller = useRef<HTMLDivElement>(null);
   useEffect(() => {
     // Only once (someone who lands on an entry far down the list). After that the panel keeps the scroll position the visitor left it at.
@@ -65,10 +70,13 @@ export function SectionNavDesktop(props: NavProps) {
       <Nav {...props} />
     </div>
   );
-}
+});
 
-/** "In this section" on small screens: a disclosure that closes itself after the visitor picks an entry. */
-export function SectionNavMobile(props: NavProps) {
+/**
+ * "In this section" on small screens: a disclosure that closes itself after the visitor picks an entry.
+ * memo for the same reason as SectionNavDesktop (the two panels are twins; both are mounted, one is hidden by CSS).
+ */
+export const SectionNavMobile = memo(function SectionNavMobile(props: NavProps) {
   const { current } = props;
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [current]);
@@ -80,7 +88,7 @@ export function SectionNavMobile(props: NavProps) {
       </div>
     </details>
   );
-}
+});
 
 export function SectionNavSkeleton() {
   return (
