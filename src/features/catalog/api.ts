@@ -8,6 +8,7 @@ import {
   tagDetailDataSchema,
   tagsDataSchema,
   pageMetaSchema,
+  searchDataSchema,
   type DeliveryCategory,
   type DeliveryCategoryDetail,
   type Difficulty,
@@ -75,4 +76,13 @@ export async function getTag(slug: string, query: { page?: number; limit?: numbe
   const response = await api<unknown>(`/delivery/tags/${encodeURIComponent(slug)}`, { query: { ...query }, signal });
   const data = parseResponse(tagDetailDataSchema, response.data);
   return { tag: data.tag, entries: { entries: data.entries, meta: parseResponse(pageMetaSchema, response.meta) } };
+}
+
+/** The shortest search text the API accepts. */
+export const MIN_SEARCH_LENGTH = 2;
+
+/** Full-text search over published entries, best match first. The API has no topic or difficulty filter here. Supports "quoted phrases", OR and -excluded. `q` must have at least MIN_SEARCH_LENGTH characters. */
+export async function searchEntries(query: { q: string; page?: number; limit?: number }, signal?: AbortSignal): Promise<EntriesPage> {
+  const response = await api<unknown>("/delivery/search", { query: { ...query }, signal });
+  return { entries: parseResponse(searchDataSchema, response.data).results, meta: parseResponse(pageMetaSchema, response.meta) };
 }

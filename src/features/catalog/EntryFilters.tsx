@@ -17,7 +17,8 @@ interface Props {
   difficulty: Difficulty | undefined;
   /** The search text that is in the URL right now. */
   search: string;
-  onDifficulty: (difficulty: Difficulty | undefined) => void;
+  /** Leave out when the list cannot be filtered by difficulty (the search endpoint): the buttons are then not drawn. */
+  onDifficulty?: (difficulty: Difficulty | undefined) => void;
   onSearch: (search: string) => void;
   /** What the search box is called (its label and placeholder). */
   searchLabel?: string;
@@ -56,6 +57,7 @@ export function EntryFilters({ difficulty, search, onDifficulty, onSearch, searc
 
   return (
     <div className="flex flex-wrap items-center gap-3">
+      {onDifficulty && (
       <div role="group" aria-label="Difficulty" className="flex gap-1.5">
         {LEVELS.map((level) => (
           <Button key={level.label} size="sm" variant={difficulty === level.value ? "primary" : "secondary"} aria-pressed={difficulty === level.value} onClick={() => onDifficulty(level.value)}>
@@ -63,6 +65,7 @@ export function EntryFilters({ difficulty, search, onDifficulty, onSearch, searc
           </Button>
         ))}
       </div>
+      )}
       <label className="flex-1">
         <span className="sr-only">{searchLabel}</span>
         <input

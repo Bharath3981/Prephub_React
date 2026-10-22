@@ -118,11 +118,18 @@ The entry endpoint (`GET /delivery/categories/{c}/sections/{s}/entries/{slug}`) 
 - [x] 4.4 `/tags/:tag`: header with the entry count, entries 20 per page, no filters (the API ignores difficulty here). Unknown tag: the API answers 404 and the page shows `NotFoundPage` (title "Page not found"). Page beyond the end shows "There is no page 2".
 - [x] 4.5 Render budget (dev, Strict Mode doubles every render, so 40 rows = 20 cards once): cold `/questions` 40 `EntryRow`, 3 `QuestionsPage`; difficulty click 40 rows (the new 20), 2 page renders (dimmed old list, then new list); page change the same; typing renders no row until the debounced text reaches the URL (4 `EntryFilters`, 0 rows).
 
+## M5 Search: done
+
+- [x] 5.1 `GET /delivery/search` (`searchEntries`, `MIN_SEARCH_LENGTH = 2`): results are entry summaries plus a `snippet`. The API has **no topic or difficulty filter** here (checked: same totals with and without), so the search page has only the box, and `EntryFilters` hides the difficulty buttons when `onDifficulty` is not passed. The query supports "quoted phrases", `OR` and `-excluded`.
+- [x] 5.2 `/search?search=...&page=n` (`SearchPage`): same URL-state and `EntryResults` machinery as `/questions`. Below 2 characters no request is made (a constant empty page is used and a hint is shown). The page always renders the same tree, so the box keeps text and focus when the query becomes long enough (an earlier idea, a separate branch for "too short", would have remounted the box).
+- [x] 5.3 `Snippet`: highlights matches without `dangerouslySetInnerHTML`; the text is split on `<mark>` and each piece is drawn as plain text, entities decoded. Title: "Search: <text>".
+- Checked: deep link with page 2, typing keeps focus, short/no-result messages, quoted phrase total equals the API total, build passes.
+
 ## Next
 - [ ] M2 Category and section pages
 - [ ] M3 Entry page, code editor view, tests start (3.1, 3.2, 3.4, 3.5, 3.6 and 3.7 done; 3.3 tests deferred)
 - [x] M4 Questions and tags
-- [ ] M5 Search
+- [x] M5 Search
 - [ ] M6 Public polish and quality
 
 ## Notes learned from the API

@@ -54,6 +54,8 @@ export const entrySummarySchema = z.object({
   /** Where the entry lives, so a link to it can be built from the entry alone. */
   categorySlug: z.string(),
   sectionSlug: z.string(),
+  /** Only in search results: a piece of the text around the match, with the matches wrapped in <mark>...</mark>. */
+  snippet: z.string().nullish(),
 });
 export type EntrySummary = z.infer<typeof entrySummarySchema>;
 export const entriesDataSchema = z.object({ entries: z.array(entrySummarySchema) });
@@ -110,3 +112,5 @@ export interface TagEntries {
   tag: TagWithCount;
   entries: EntriesPage;
 }
+
+export const searchDataSchema = z.object({ results: z.array(entrySummarySchema) });

@@ -4,6 +4,7 @@ import type { EntrySummary } from "@/features/catalog/types";
 import { Badge } from "@/shared/ui/Badge";
 import { DifficultyBadge } from "@/shared/ui/DifficultyBadge";
 import { KindBadge } from "@/shared/ui/KindBadge";
+import { Snippet } from "@/features/catalog/Snippet";
 import { useRenderCount } from "@/shared/dev/render-count";
 
 /**
@@ -27,7 +28,7 @@ export const EntryRow = memo(function EntryRow({ entry, topic }: { entry: EntryS
           {entry.difficulty && <DifficultyBadge difficulty={entry.difficulty} />}
         </div>
         <h3 className="font-semibold">{entry.title}</h3>
-        {entry.summary && <p className="line-clamp-2 text-sm text-muted">{entry.summary}</p>}
+        {entry.snippet ? <Snippet text={entry.snippet} /> : entry.summary && <p className="line-clamp-2 text-sm text-muted">{entry.summary}</p>}
         {entry.tags.length > 0 && (
           <ul className="flex flex-wrap gap-1.5" aria-label="Tags">
             {entry.tags.map((tag) => (

@@ -4,6 +4,7 @@ import { DevBoomPage } from "@/app/pages/DevBoomPage";
 import { DevRacePage } from "@/app/pages/DevRacePage";
 import { DevUiPage } from "@/app/pages/DevUiPage";
 import { QuestionsPage } from "@/features/browse/QuestionsPage";
+import { SearchPage } from "@/features/browse/SearchPage";
 import { TagPage } from "@/features/browse/TagPage";
 import { TagsPage } from "@/features/browse/TagsPage";
 import { CategoryPage } from "@/features/catalog/CategoryPage";
@@ -33,7 +34,7 @@ export const router = createBrowserRouter([
           { path: "questions", element: <QuestionsPage /> },
           { path: "tags", element: <TagsPage /> },
           { path: "tags/:tag", element: <TagPage /> },
-          { path: "search", element: <PlaceholderPage title="Search" module="M5" /> },
+          { path: "search", element: <SearchPage /> },
           // Development-only pages: a crash test, the race condition demo and the UI components.
           ...(import.meta.env.DEV
             ? [
