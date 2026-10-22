@@ -125,11 +125,34 @@ The entry endpoint (`GET /delivery/categories/{c}/sections/{s}/entries/{slug}`) 
 - [x] 5.3 `Snippet`: highlights matches without `dangerouslySetInnerHTML`; the text is split on `<mark>` and each piece is drawn as plain text, entities decoded. Title: "Search: <text>".
 - Checked: deep link with page 2, typing keeps focus, short/no-result messages, quoted phrase total equals the API total, build passes.
 
+## M7 Admin console (pure React, no TanStack): done
+
+**Login and tokens.** The API puts both tokens in `httpOnly` cookies (`access_token`, path `/`, minutes; `refresh_token`, path `/api/v1/auth`, days), so React never holds a token; it keeps only the user from `GET /auth/me` (name, role, permission keys). The Vite proxy keeps everything on one origin, so `sameSite=lax` works and no CORS or CSRF token is needed.
+- `shared/api/client.ts`: on a 401 the client calls `POST /auth/refresh` ONCE (concurrent failures share one promise) and repeats the request; if the refresh fails it calls a handler that signs the user out. Login, refresh and logout are never refreshed. Checked by faking three 401s: one refresh call, then the retried requests succeeded.
+- `features/admin/auth`: `AuthProvider` (mounted only under `/admin`, so the public site never asks), `useAuth`, `useUser`, `useCan(...keys)` (permissions, never role names), `RequireAuth` (loading, redirect to `/admin/login?next=...` with `safeNext`, "no access" without `admin.access`), `RequirePermission` per page, `LoginPage`, forgot/reset password pages (also at the root, because the API's invite link is `WEB_URL/reset-password?token=...`).
+- **Header:** "Sign in" when nobody is signed in; "Admin" and "Sign out" when someone is (Admin only with `admin.access`). Nothing is drawn while `/auth/me` is pending, so there is no flash. For this the `AuthProvider` moved up into `RootLayout`: the public site now makes one `GET /auth/me` per app load (a 401 is the normal answer).
+- Admin pages are lazy routes (own chunks, 2 to 7 kB each), so the public bundle does not grow.
+
+**Pages** (sidebar shows only what the permissions allow; buttons are hidden the same way; the API still enforces everything): dashboard + recent activity; topics (create, edit, reorder, delete with cascade); sections (same, per topic); entries (list with status filter, publish/unpublish, delete, reorder when unfiltered, editor with Markdown + live preview from the API's renderer, tags, kind-specific meta); tags (search, sort, create, rename, merge, delete, remove unused); users (search, role filter, create with invite link, edit, disable/enable, sign out everywhere); roles (create, edit with permission checkboxes limited to ones you hold, delete); settings (typed editors, reset to default); audit log (filters, cursor "Load more", details with before/after); background jobs; my account (sessions, change password).
+
+**Row actions are icons** (`shared/ui/IconButton.tsx`: `Icon`, `IconButton`, `IconLink`; Lucide-style inline SVG, no icon library). The label ("Edit Admin") is both the tooltip and the accessible name, so screen readers still hear the action and its target. Selects use `appearance: none` plus a `.select-chevron` background so they match inputs, and filter bars align to the top (a hint under one field no longer pushes the others down).
+
+**Shared pieces:** `useAction` (pending, error, result for a button press), `fieldErrors` (API `details` to per-field messages), `Field`/`TextField`/`SelectField`..., `Modal` (native `<dialog>`), `ConfirmDialog`, `admin-api.ts` (`mget`, `msend`, zod-checked), `admin/schemas.ts`.
+
+**Things learned**
+- A `<dialog>` closed in an effect cleanup fires its `close` event; with Strict Mode's double effect that closed the dialog the moment it opened. No `close()` in the cleanup.
+- Paths: permissions are `/management/permissions` (not under `/roles`); the search endpoint has no filters (see M5); a role's name cannot be edited, only description and permissions.
+- The related-entries list of an entry is shown read-only (kept as it is on save); a picker would need an entry lookup by title across sections.
+- Admin responses are checked with zod like the public ones.
+
+Tested in the browser with a throwaway admin, a limited role (nav, read-only topics, "No access" on users and audit), then cleaned up (test topic deleted, test role deleted, test users disabled; users cannot be deleted through the API).
+
 ## Next
 - [ ] M2 Category and section pages
 - [ ] M3 Entry page, code editor view, tests start (3.1, 3.2, 3.4, 3.5, 3.6 and 3.7 done; 3.3 tests deferred)
 - [x] M4 Questions and tags
 - [x] M5 Search
+- [x] M7 Admin console
 - [ ] M6 Public polish and quality
 
 ## Notes learned from the API

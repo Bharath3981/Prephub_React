@@ -48,7 +48,7 @@ function toQueryString(query?: Query): string {
   return text ? `?${text}` : "";
 }
 
-export async function api<T, M = unknown>(path: string, { method = "GET", body, query, signal }: RequestOptions = {}): Promise<ApiSuccess<T, M>> {
+async function send<T, M>(path: string, { method = "GET", body, query, signal }: RequestOptions): Promise<ApiSuccess<T, M>> {
   let res: Response;
   try {
     res = await fetch(BASE + path + toQueryString(query), {
@@ -76,4 +76,42 @@ export async function api<T, M = unknown>(path: string, { method = "GET", body, 
     throw new ApiRequestError(res.status, error?.code ?? "UNKNOWN", error?.message ?? (res.statusText || "Request failed"), error?.details, error?.requestId);
   }
   return json as ApiSuccess<T, M>;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Silent refresh. The access token (httpOnly cookie) lives for minutes. When it has expired the API answers 401; we
+// ask POST /auth/refresh for a new one (the browser sends the refresh cookie by itself) and repeat the request once.
+// ---------------------------------------------------------------------------------------------
+
+/** The refresh that is running right now. Five requests failing together share ONE refresh instead of sending five. */
+let refreshing: Promise<boolean> | null = null;
+
+function refreshSession(): Promise<boolean> {
+  refreshing ??= fetch(`${BASE}/auth/refresh`, { method: "POST", credentials: "include", headers: { accept: "application/json" } })
+    .then((res) => res.ok)
+    .catch(() => false)
+    .finally(() => {
+      refreshing = null;
+    });
+  return refreshing;
+}
+
+/** Called when the session could not be renewed, so the app can forget the user and show the login page. */
+let onSessionExpired: (() => void) | undefined;
+export function setSessionExpiredHandler(handler: (() => void) | undefined) {
+  onSessionExpired = handler;
+}
+
+/** These answer 401 for a normal reason (wrong password, no cookie), so a refresh would not help. */
+const NO_REFRESH = ["/auth/login", "/auth/refresh", "/auth/logout"];
+
+export async function api<T, M = unknown>(path: string, options: RequestOptions = {}): Promise<ApiSuccess<T, M>> {
+  try {
+    return await send<T, M>(path, options);
+  } catch (error) {
+    if (!(error instanceof ApiRequestError) || error.status !== 401 || NO_REFRESH.includes(path)) throw error;
+    if (await refreshSession()) return send<T, M>(path, options); // second try; a second 401 is final
+    onSessionExpired?.();
+    throw error;
+  }
 }

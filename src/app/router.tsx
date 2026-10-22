@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router";
+import { adminRoute, rootPasswordRoutes } from "@/features/admin/routes";
 import { RootLayout } from "@/app/layouts/RootLayout";
 import { DevBoomPage } from "@/app/pages/DevBoomPage";
 import { DevRacePage } from "@/app/pages/DevRacePage";
@@ -31,6 +32,9 @@ export const router = createBrowserRouter([
         errorElement: <RouteError />,
         children: [
           { index: true, element: <HomePage /> },
+          // The staff area. Its own route tree (login, guard, sidebar); the pages are loaded on demand.
+          adminRoute,
+          ...rootPasswordRoutes,
           { path: "questions", element: <QuestionsPage /> },
           { path: "tags", element: <TagsPage /> },
           { path: "tags/:tag", element: <TagPage /> },

@@ -248,3 +248,9 @@ body {
 .hljs-strong {
   font-weight: 700;
 }
+
+/* The arrow of a native <select>. The browser's own arrow is turned off (appearance: none) so every select looks the
+   same and lines up with the inputs next to it; this draws a chevron on the right instead. */
+.select-chevron {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239a9aa6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}

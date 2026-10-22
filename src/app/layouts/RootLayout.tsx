@@ -1,4 +1,5 @@
 import { Outlet, ScrollRestoration } from "react-router";
+import { AuthProvider } from "@/features/admin/auth/AuthProvider";
 import { Footer } from "@/app/layouts/Footer";
 import { Header } from "@/app/layouts/Header";
 import { RouteAnnouncer, RouteFocus } from "@/app/layouts/RouteEffects";
@@ -9,10 +10,13 @@ import { Container } from "@/shared/ui/Container";
 /**
  * The frame around every page: header, the current page (<Outlet />) and footer.
  * It stays mounted while you move between pages, so only the page inside the Outlet changes.
+ * AuthProvider is here (not only under /admin) because the header shows "Sign in" or "Admin / Sign out" on every page.
+ * It costs one GET /auth/me when the app loads; a 401 there simply means "nobody is signed in".
  */
 export function RootLayout() {
   useRenderCount("RootLayout");
   return (
+    <AuthProvider>
     <div className="flex min-h-screen flex-col">
       {/* First focusable element: lets keyboard users skip the header and jump to the content. */}
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-30 focus:rounded-md focus:bg-surface focus:px-3 focus:py-2">
@@ -32,5 +36,6 @@ export function RootLayout() {
       <RouteAnnouncer />
       {import.meta.env.DEV && <RenderPanel />}
     </div>
+    </AuthProvider>
   );
 }
