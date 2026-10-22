@@ -19,10 +19,12 @@ interface Props {
   search: string;
   onDifficulty: (difficulty: Difficulty | undefined) => void;
   onSearch: (search: string) => void;
+  /** What the search box is called (its label and placeholder). */
+  searchLabel?: string;
 }
 
 /** Difficulty buttons and a search box. The URL is the truth; the box keeps its own text while typing and writes to the URL after a pause. */
-export function EntryFilters({ difficulty, search, onDifficulty, onSearch }: Props) {
+export function EntryFilters({ difficulty, search, onDifficulty, onSearch, searchLabel = "Search in this section" }: Props) {
   useRenderCount("EntryFilters");
   // What is in the box right now. It changes on every keystroke, so the box always feels instant.
   const [draft, setDraft] = useState(search);
@@ -62,12 +64,12 @@ export function EntryFilters({ difficulty, search, onDifficulty, onSearch }: Pro
         ))}
       </div>
       <label className="flex-1">
-        <span className="sr-only">Search in this section</span>
+        <span className="sr-only">{searchLabel}</span>
         <input
           type="search"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
-          placeholder="Search in this section"
+          placeholder={searchLabel}
           maxLength={100}
           className="h-8 w-full min-w-48 rounded-lg border border-border bg-surface px-3 text-sm placeholder:text-muted focus:border-accent focus:outline-none"
         />

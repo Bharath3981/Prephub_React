@@ -53,3 +53,8 @@ export function useFetch<T>(fetcher: (signal: AbortSignal) => Promise<T>, deps: 
   const state = sameDeps(stored.deps, deps) ? stored.state : LOADING;
   return { ...state, reload };
 }
+
+/** Turns the data of a successful fetch into something else (for example `result.tag` into `result.entries`), keeping `reload`. */
+export function mapFetchState<T, U>(state: FetchState<T> & { reload: () => void }, map: (data: T) => U): FetchState<U> & { reload: () => void } {
+  return state.status === "success" ? { status: "success", data: map(state.data), reload: state.reload } : state;
+}

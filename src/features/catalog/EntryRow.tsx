@@ -13,7 +13,7 @@ import { useRenderCount } from "@/shared/dev/render-count";
  * and without memo every card renders each time, with the very same `entry`. memo skips a card whose `entry` is the same
  * object as last time. That works because useFetch keeps the same data objects between renders.
  */
-export const EntryRow = memo(function EntryRow({ entry }: { entry: EntrySummary }) {
+export const EntryRow = memo(function EntryRow({ entry, topic }: { entry: EntrySummary; topic?: string }) {
   useRenderCount("EntryRow");
   return (
     <li>
@@ -22,6 +22,7 @@ export const EntryRow = memo(function EntryRow({ entry }: { entry: EntrySummary 
         className="block space-y-2 rounded-xl border border-border bg-surface p-4 transition-colors hover:border-accent"
       >
         <div className="flex flex-wrap items-center gap-2">
+          {topic && <Badge>{topic}</Badge>}
           <KindBadge kind={entry.kind} />
           {entry.difficulty && <DifficultyBadge difficulty={entry.difficulty} />}
         </div>

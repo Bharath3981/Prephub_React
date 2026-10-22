@@ -3,6 +3,9 @@ import { RootLayout } from "@/app/layouts/RootLayout";
 import { DevBoomPage } from "@/app/pages/DevBoomPage";
 import { DevRacePage } from "@/app/pages/DevRacePage";
 import { DevUiPage } from "@/app/pages/DevUiPage";
+import { QuestionsPage } from "@/features/browse/QuestionsPage";
+import { TagPage } from "@/features/browse/TagPage";
+import { TagsPage } from "@/features/browse/TagsPage";
 import { CategoryPage } from "@/features/catalog/CategoryPage";
 import { EntryPage } from "@/features/catalog/EntryPage";
 import { HomePage } from "@/features/catalog/HomePage";
@@ -27,9 +30,9 @@ export const router = createBrowserRouter([
         errorElement: <RouteError />,
         children: [
           { index: true, element: <HomePage /> },
-          { path: "questions", element: <PlaceholderPage title="Questions" module="M4" /> },
-          { path: "tags", element: <PlaceholderPage title="Tags" module="M4" /> },
-          { path: "tags/:tag", element: <PlaceholderPage title="Tag" module="M4" /> },
+          { path: "questions", element: <QuestionsPage /> },
+          { path: "tags", element: <TagsPage /> },
+          { path: "tags/:tag", element: <TagPage /> },
           { path: "search", element: <PlaceholderPage title="Search" module="M5" /> },
           // Development-only pages: a crash test, the race condition demo and the UI components.
           ...(import.meta.env.DEV
